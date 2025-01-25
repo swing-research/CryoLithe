@@ -1,0 +1,23 @@
+# Directory containing the traned model
+model_dir: "./trained_models/real_trained/"
+
+# Path to the projection file
+proj_file: "./data/ribosome/projection.mrcs"
+# Path to the angle file in degrees
+angle_file: "./data/ribosome/angles.tlt"
+
+# Save location
+save_dir: "./results/ribo/"
+save_name: "./vol_ribo.mrc"
+
+# GPU device to be used
+device: 0
+# Pre prcessing Projection to desired resolution
+downsample_projections: True
+downsample_factor: 0.25
+anti_alias: True
+# Volume size along the z axis (constructs center-N3//2 to center+N3//2)
+N3: 200
+
+#Model Memory Parameters
+batch_size: 50_000
