@@ -3,7 +3,7 @@
 ## Installation
 Download the repository using the command:
 ```bash
-git clone git@github.com:swing-research/supervised-cryoET-inference.git
+git clone git@github.com:swing-research/CryoLithe.git
 ```
 
 
