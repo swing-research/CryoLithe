@@ -1,4 +1,4 @@
-# Supervised Approach to CryoET Reconstructions
+# End-to-end localized deep learning for Cryo-ET 	
 
 ## Installation
 Download the repository using the command:
@@ -41,6 +41,10 @@ This will download the trained models and place them in the `trained_models` dir
 - `config.json` - the configuration file used to train the model contains the model architecture and hyperparameters
 
 ## Running the model
+**Note**: The current model is designed to work only with tilt series containing **41 projections**.  
+
+We are actively working on extending the model to support arbitrary tilt series, which will be released in an upcoming update.
+
 The script 'super.py' is used to run the trained model on any new projection of choice.  The script requires a configuration file that contains the necessary information to run the model.
 The configuration file is a yaml file that contains the following fields:
  - 'model_dir' - path to the directory containing the trained model
