@@ -9,7 +9,7 @@ git clone git@github.com:swing-research/CryoLithe.git
 
 Create a new conda environment using the command:
 ```bash
-conda create -n super python=3.8
+conda create -n CryoLithe python=3.8
 ```
 
 
