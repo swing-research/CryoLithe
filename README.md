@@ -1,4 +1,6 @@
 # End-to-end localized deep learning for Cryo-ET 	
+Official repo for CryoLithe (paper)
+
 
 ## Installation
 Download the repository using the command:
