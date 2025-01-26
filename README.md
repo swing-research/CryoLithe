@@ -16,7 +16,7 @@ conda create -n super python=3.8
 
 Activate the environment using the command:
 ```bash
-conda activate super
+conda activate CryoLithe
 ```
 Install a version of PyTorch that is compatible with your system using the command:
 ```bash
