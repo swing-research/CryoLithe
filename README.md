@@ -23,7 +23,7 @@ conda activate CryoLithe
 ```
 Install a version of PyTorch that is compatible with your system using the command:
 ```bash
-conda install pytorch torchvision torchaudio cudatoolkit=11.8 -c pytorch -c nvidia
+pip3 install torch torchvision torchaudio
 ```
 
 
