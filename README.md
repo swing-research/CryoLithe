@@ -1,5 +1,5 @@
 # End-to-end localized deep learning for Cryo-ET 	
-Official repo for CryoLithe (paper)
+Official repo for CryoLithe ([paper](https://arxiv.org/abs/2501.15246))
 
 CryoLithe is a supervised machine learning method to directly reconstruct the tomogram from aligned cryo-ET tilt series. The methods is trained on real measurements using FBP+cryo-CARE+IsoNet reconstructions as the reference. The network exploits the imaging geometry to extract small patches from the tilt series to recover the volume. Thus it is practically robust to various data distirbutions. The method provides FBP+cryo-CARE+IsoNet type of reconstructions in a fraction of the time.
 
