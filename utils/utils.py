@@ -28,20 +28,15 @@ def generate_projections_location(points: torch.FloatTensor, angles: torch.Float
 
     normals = torch.zeros((n_projections,3)).to(points.device)
 
-    normals[:,0] = torch.sin(angles)
-    normals[:,1] = torch.cos(angles)
+    normals[:,0] = torch.cos(angles)
+    normals[:,1] = -torch.sin(angles)
 
     projection =  points@ normals.T
+    points_proj = points[:,None,:] - projection[:,:,None] * normals[None,:,:]
+    points_proj[:,:,1] = points_proj[:,:,1]/torch.cos(angles)[None,:]
+    local_coords = points_proj[:,:,1:]
 
-    local_coords = torch.zeros((n_projections,n_points,2)).to(points.device)
-    for i in range(n_projections):
-        # points_proj = points - projection[:,i].reshape(-1,1)*normals[i]
-        # local_coords[i,:,0] =  points_proj[:,1]/torch.cos(angles[i])
-        # local_coords[i,:,1] =  points[:,2]
-
-        local_coords[i,:,0] =  points@normals[i]#points_proj[:,1]/torch.cos(angles[i])
-        local_coords[i,:,1] =  points[:,2]
-    return local_coords
+    return local_coords.permute(1,0,2)
 
 
 
@@ -118,61 +113,9 @@ def generate_patches_from_volume_location(volume_location : torch.Tensor,
     #projection_size = projections.shape[1]
     n_points = volume_location.shape[0]
 
-    if scale is None:
-
-        if type(vol) == list:
-            vol_samples = []
-            for vol_i in vol:
-                vol_samples.append(volume_sampler(vol_i,volume_location))
-                # torch.nn.functional.grid_sample(vol_i.unsqueeze(0).unsqueeze(0),
-                #                                             volume_location.unsqueeze(
-                # 0).unsqueeze(0).unsqueeze(0),mode='bilinear',padding_mode='zeros', align_corners=ALIGN_CORNERS).squeeze())
-        else:
-            vol_samples = volume_sampler(vol,volume_location)
-            # torch.nn.functional.grid_sample(vol.unsqueeze(0).unsqueeze(0),
-            #                                                 volume_location.unsqueeze(
-            #     0).unsqueeze(0).unsqueeze(0),mode='bilinear',padding_mode='zeros', align_corners=ALIGN_CORNERS).squeeze()
-    else:
-
-        if discrete_sampling:
-            if type(vol) == list:
-                vol_n1 = vol[0].shape[0]
-                vol_n2 = vol[0].shape[1]
-                vol_n3 = vol[0].shape[2]
-            else:
-                vol_n1 = vol.shape[0]
-                vol_n2 = vol.shape[1]
-                vol_n3 = vol.shape[2]
-
-            x_location = torch.round(((volume_location[:,2]/scale[0])/2 + 0.5)*(vol_n1-1)).long()
-            y_location = torch.round(((volume_location[:,1]/scale[1])/2 + 0.5)*(vol_n2-1)).long()
-            z_location = torch.round(((volume_location[:,0]/scale[2])/2 + 0.5)*(vol_n3-1)).long()
-
-
-            #print(x_location)
-            if type(vol) == list:
-                vol_samples = []
-                for vol_i in vol:
-                    vol_samples.append(vol_i[x_location,y_location,z_location])
-            else:
-                vol_samples = vol[x_location,y_location,z_location]
-
-        else:
-            scaled_vol_location = volume_location.clone()
-            scaled_vol_location[:,0] = scaled_vol_location[:,0]/scale[2]
-            scaled_vol_location[:,1] = scaled_vol_location[:,1]/scale[1]
-            scaled_vol_location[:,2] = scaled_vol_location[:,2]/scale[0]
-
-            if type(vol) == list:
-                vol_samples = []
-                for vol_i in vol:
-                    vol_samples.append(volume_sampler(vol_i,scaled_vol_location))                
-            else: 
-                vol_samples = volume_sampler(vol,scaled_vol_location)
-
-
     proj_scale = torch.tensor([n_1,n_2],device=device)
     proj_scale = proj_scale/max(proj_scale)
+    vol_samples = None
 
 
     if ALIGN_CORNERS:
@@ -263,6 +206,7 @@ def generate_patches_from_volume_location(volume_location : torch.Tensor,
 
         patches = patches.permute(1,0,2,3)
         return vol_samples,patches
+
 
 
 

@@ -36,6 +36,13 @@ if __name__ == "__main__":
     save_name = config["save_name"]
     angles = np.loadtxt(config["angle_file"])
 
+    # check if the parameter is preset
+    if "num_workers" in config:
+        num_workers = config["num_workers"]
+        print('num_workers:',num_workers)
+    else:
+        num_workers = 0
+
 
     eval = Evaluator(model_path = model_path , device = device)
 
@@ -62,6 +69,19 @@ if __name__ == "__main__":
             proj_ds_set.append(proj_ds.cpu().numpy())
             
         projection = np.array(proj_ds_set)
+
+
+
+    # Zero pad the projections to make them square
+    N1 = projection.shape[1]
+    N2 = projection.shape[2]
+
+    if N1>N2:
+        pad = (N1-N2)//2
+        projection = np.pad(projection,((0,0),(0,0),(pad,pad)))
+    elif N2>N1:
+        pad = (N2-N1)//2
+        projection = np.pad(projection,((0,0),(pad,pad),(0,0)))
 
     
 
@@ -93,12 +113,19 @@ if __name__ == "__main__":
                                    angles= angles,
                                    N3 = N3, 
                                    N3_scale = 0.5,
-                                   batch_size = batch_size)
+                                   batch_size = batch_size, 
+                                   num_workers=num_workers)
+    
+    vol = np.moveaxis(vol,2,0)
+    if N1 > N2:
+        vol = vol[:,:,pad:-pad]
+    elif N2 > N1:
+        vol = vol[:,pad:-pad]
 
     save_path = os.path.join(save_dir,save_name)
 
 
 
     out = mrcfile.new(save_path,overwrite = True)
-    out.set_data(np.moveaxis(vol,2,0))
+    out.set_data(vol)
     out.close()

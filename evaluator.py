@@ -51,7 +51,7 @@ class Evaluator:
         self.patch_scale = patch_scale
         self.filter_2D = filter_2D
 
-    def  full_reconstruction(self, projection, angles, N3_scale = 0.5,batch_size = int(4e4) ,N3 = None,):
+    def  full_reconstruction_slice(self, projection, angles, N3_scale = 0.5,batch_size = int(4e4) ,N3 = None,):
         """
         projections: list of projections or projections of shape (n_projections, N_1, N_2)
         angles: list of angles or angles of shape (n_projections) in degrees
@@ -91,7 +91,7 @@ class Evaluator:
 
                 point3D_vec = points_3D.view(-1,3)
 
-                point_loader = DataLoader(point3D_vec,shuffle=False,batch_size=batch_size)
+                point_loader = DataLoader(point3D_vec,shuffle=False,batch_size=batch_size, num_workers=8)
                
                 vol_est_set = []
                 for points in point_loader:
@@ -107,6 +107,60 @@ class Evaluator:
                 
                 vol_est =np.concatenate(vol_est_set).reshape(N1,N2)
                 vol_full_est[:,:,rel_index] = vol_est
+                
+        return vol_full_est
+    
+
+    def  full_reconstruction(self, projection, angles, N3_scale = 0.5,batch_size = int(4e4) ,N3 = None, num_workers =4):
+        """
+        projections: list of projections or projections of shape (n_projections, N_1, N_2)
+        angles: list of angles or angles of shape (n_projections) in degrees
+        """
+
+        projection_filt = self.filter_projections(projection)
+        angles_t = torch.tensor(angles, dtype=torch.float32, device=self.device)*torch.pi/180
+
+
+        N1,N2 = projection_filt.shape[-2], projection_filt.shape[-1]
+        if N3 is None:
+            N3 = int(max(N1,N2)*N3_scale)
+
+        
+        z_index_set = torch.arange(projection_filt.shape[-1]//2-N3//2, projection_filt.shape[-1]//2+N3//2)
+
+        vol_dummy = torch.zeros((100,100,50),dtype=torch.float32,device=self.device)
+
+        vol_full_est = np.zeros((N1,N2,N3),dtype=np.float32)
+
+        x_index = torch.linspace(-1,1,N1)
+        y_index = torch.linspace(-1,1,N2)
+        z_index_values = torch.linspace(-1,1,N2)
+        z_index = z_index_values[projection_filt.shape[-1]//2 - N3//2:projection_filt.shape[-1]//2 + N3//2]
+
+        scale = np.ones(3)
+        scale[2] = vol_dummy.shape[2]/vol_dummy.shape[1]    
+        zz_test,xx_test, yy_test = torch.meshgrid(z_index,x_index,y_index ,indexing= 'ij')  
+        points_3D = torch.cat((zz_test.unsqueeze(-1),yy_test.unsqueeze(-1),xx_test.unsqueeze(-1)),dim=3)
+        points_3D = points_3D.reshape(-1,3)
+        point_loader = DataLoader(points_3D,shuffle=False,batch_size=batch_size,num_workers=num_workers)
+        with torch.no_grad():
+            self.model.eval()
+            vol_est_set = []
+
+            for points in tqdm(point_loader):
+                points = points.to(self.device)
+
+                vol_true, projection_patches = generate_patches_from_volume_location(points, vol_dummy ,
+                                                                                    projection_filt,
+                                                                                    angles_t,
+                                                                                    patch_size = self.configs.model.patch_size,
+                                                                                scale=scale,
+                                                                                patch_scale= self.patch_scale) 
+
+                vol_est = self.model(projection_patches)[:,0].detach().cpu().numpy() 
+                vol_est_set.append(vol_est)
+            vol_est =np.concatenate(vol_est_set).reshape(N3,N1,N2)
+            vol_full_est = np.moveaxis(vol_est,0,-1)
                 
         return vol_full_est
     

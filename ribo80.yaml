@@ -21,3 +21,6 @@ N3: 200
 
 #Model Memory Parameters
 batch_size: 50_000
+
+# CPU threads
+num_workers: 4
