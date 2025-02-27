@@ -47,13 +47,23 @@ if __name__ == "__main__":
     eval = Evaluator(model_path = model_path , device = device)
 
     proj_path = config["proj_file"]
-    projection = mrcfile.open(proj_path).data
+    projection = mrcfile.open(proj_path, permissive=True).data
     projection = projection - np.mean(projection)
     projection = projection/np.std(projection)
 
 
-    
-    
+    if len(angles) > 41:
+        print("We resample the tilt-series and we need exactly 41 tilt at the moment.")
+        ind_sangles = np.linspace(0,len(angles)-1,41).astype(int)
+        angles = angles[ind_sangles]
+        projection = projection[ind_sangles]
+
+    if len(angles)<41:
+        print("Impossible to work with less than 41 projections at the moment.")
+        import sys
+        sys.exit(0)
+
+       
     
     if downsample:
         downsample_factor = config["downsample_factor"]
@@ -82,6 +92,10 @@ if __name__ == "__main__":
     elif N2>N1:
         pad = (N2-N1)//2
         projection = np.pad(projection,((0,0),(pad,pad),(0,0)))
+
+    if N3 > int(max(N1,N2)):
+        print("Changed value of N3 to be same as max(N1,N2)")
+        N3 =  int(max(N1,N2))
 
     
 
@@ -121,10 +135,8 @@ if __name__ == "__main__":
         vol = vol[:,:,pad:-pad]
     elif N2 > N1:
         vol = vol[:,pad:-pad]
-
+    
     save_path = os.path.join(save_dir,save_name)
-
-
 
     out = mrcfile.new(save_path,overwrite = True)
     out.set_data(vol)

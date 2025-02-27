@@ -111,7 +111,7 @@ class Evaluator:
         return vol_full_est
     
 
-    def  full_reconstruction(self, projection, angles, N3_scale = 0.5,batch_size = int(4e4) ,N3 = None, num_workers =4):
+    def full_reconstruction(self, projection, angles, N3_scale = 0.5,batch_size = int(4e4) ,N3 = None, num_workers =4):
         """
         projections: list of projections or projections of shape (n_projections, N_1, N_2)
         angles: list of angles or angles of shape (n_projections) in degrees
@@ -120,12 +120,10 @@ class Evaluator:
         projection_filt = self.filter_projections(projection)
         angles_t = torch.tensor(angles, dtype=torch.float32, device=self.device)*torch.pi/180
 
-
         N1,N2 = projection_filt.shape[-2], projection_filt.shape[-1]
         if N3 is None:
             N3 = int(max(N1,N2)*N3_scale)
 
-        
         z_index_set = torch.arange(projection_filt.shape[-1]//2-N3//2, projection_filt.shape[-1]//2+N3//2)
 
         vol_dummy = torch.zeros((100,100,50),dtype=torch.float32,device=self.device)
