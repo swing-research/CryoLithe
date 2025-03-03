@@ -43,6 +43,15 @@ if __name__ == "__main__":
     else:
         num_workers = 0
 
+    if "multi_gpu" in config:
+        multi_gpu = config["multi_gpu"]
+    else:
+        multi_gpu = False
+
+    if multi_gpu:
+        all_devices = device
+        device = device[0]
+
 
     eval = Evaluator(model_path = model_path , device = device)
 
@@ -106,29 +115,38 @@ if __name__ == "__main__":
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    ortho_slice = eval.orthogonal_reconstruction(projection = projection,
-                                                angles = angles,
-                                                N3 = N3,
-                                                N3_scale = 0.5,
-                                                batch_size = batch_size)
+    # ortho_slice = eval.orthogonal_reconstruction(projection = projection,
+    #                                             angles = angles,
+    #                                             N3 = N3,
+    #                                             N3_scale = 0.5,
+    #                                             batch_size = batch_size)
     
 
-    # output_dict = {'x_y_slice':x_y_slice, 'x_z_slice':x_z_slice, 'y_z_slice':y_z_slice}
+    # # output_dict = {'x_y_slice':x_y_slice, 'x_z_slice':x_z_slice, 'y_z_slice':y_z_slice}
 
 
-    #Save the orthogonal slices as mrc files
-    for key in ortho_slice.keys():
-        save_path = os.path.join(save_dir,save_name + f"_{key}.mrc")
-        out = mrcfile.new(save_path,overwrite = True)
-        out.set_data(ortho_slice[key])
-        out.close()
+    # #Save the orthogonal slices as mrc files
+    # for key in ortho_slice.keys():
+    #     save_path = os.path.join(save_dir,save_name + f"_{key}.mrc")
+    #     out = mrcfile.new(save_path,overwrite = True)
+    #     out.set_data(ortho_slice[key])
+    #    out.close()
 
-    vol = eval.full_reconstruction(projection = projection, 
+    if multi_gpu:
+        vol = eval.full_reconstruction_distribute(projection = projection, 
                                    angles= angles,
                                    N3 = N3, 
                                    N3_scale = 0.5,
                                    batch_size = batch_size, 
-                                   num_workers=num_workers)
+                                   num_workers=num_workers,
+                                   gpu_ids= all_devices)
+    else:
+        vol = eval.full_reconstruction(projection = projection, 
+                                    angles= angles,
+                                    N3 = N3, 
+                                    N3_scale = 0.5,
+                                    batch_size = batch_size, 
+                                    num_workers=num_workers)
     
     vol = np.moveaxis(vol,2,0)
     if N1 > N2:
