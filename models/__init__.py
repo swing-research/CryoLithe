@@ -2,6 +2,7 @@
 from .slicemlp import sliceMLP, sliceMlp_v2,sliceMlp_mulitnet
 from .standardmlp import standardMLP
 from .adjoint import adjoint,adjoint_patch
+from .model_wrapper import model_wrapper
 
 
 def get_model(n_projections: int, type: str, **kwargs):
