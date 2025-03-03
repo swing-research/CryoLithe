@@ -7,11 +7,12 @@ proj_file: "./data/ribosome/projection.mrcs"
 angle_file: "./data/ribosome/angles.tlt"
 
 # Save location
-save_dir: "./results/ribo/"
-save_name: "./vol_ribo.mrc"
+save_dir: "./results/ribo_multi_gpu/"
+save_name: "./vol_ribo_shift_1.mrc"
 
 # GPU device to be used
-device: 0
+device: [0,1]
+multi_gpu: True
 # Pre prcessing Projection to desired resolution
 downsample_projections: True
 downsample_factor: 0.25
@@ -20,7 +21,7 @@ anti_alias: True
 N3: 200
 
 #Model Memory Parameters
-batch_size: 50_000
+batch_size: 80_000
 
 # CPU threads
-num_workers: 4
+num_workers: 5
