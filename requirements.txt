@@ -1,6 +1,9 @@
 
+
 pyyaml==6.0.1
 ml-collections==0.1.1
 tqdm==4.65.0
 mrcfile==1.4.3
 scikit-image==0.21.0
+ptwt==0.1.9
+numpy==1.26.4

@@ -1,5 +1,5 @@
 # Directory containing the traned model
-model_dir: "./trained_models/sliceset/"
+model_dir: "./trained_models/sliceset_wavelet/"
 
 # Path to the projection file
 proj_file: "./data/ribosome/projections.mrc"
@@ -8,10 +8,10 @@ angle_file: "./data/ribosome/angles.tlt"
 
 # Save location
 save_dir: "./results/ribo_slice_set/"
-save_name: "./vol_ribo_single_gpu.mrc"
+save_name: "./vol_ribo_single_gpu_wavelet.mrc"
 
 # GPU device to be used
-device: 0 # Use [0,1] to use gpus with id 0 and 1.
+device: 0 # Use [0,1] for multiple gpus
 multi_gpu: False
 # Pre prcessing Projection to desired resolution
 downsample_projections: False

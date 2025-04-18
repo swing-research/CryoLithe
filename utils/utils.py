@@ -26,7 +26,7 @@ def generate_projections_location(points: torch.FloatTensor, angles: torch.Float
     n_projections = len(angles)
     n_points = len(points)
 
-    normals = torch.zeros((n_projections,3)).to(points.device)
+    normals = torch.zeros((n_projections,3), dtype = points.dtype).to(points.device)
 
     normals[:,0] = torch.cos(angles)
     normals[:,1] = -torch.sin(angles)
@@ -101,6 +101,7 @@ def generate_patches_from_volume_location(volume_location : torch.Tensor,
     """
 
     device = volume_location.device
+    dtype = volume_location.dtype
     
     if type(projections) == list:
         n_1 = projections[0].shape[1]
@@ -119,16 +120,16 @@ def generate_patches_from_volume_location(volume_location : torch.Tensor,
 
 
     if ALIGN_CORNERS:
-        x_patch = (torch.linspace(-1,1,n_2,device=device)[:patch_size])
+        x_patch = (torch.linspace(-1,1,n_2,device=device,dtype = dtype)[:patch_size])
         x_patch = x_patch - x_patch[patch_size//2]
-        y_patch = (torch.linspace(-1,1,n_1,device=device)[:patch_size])
+        y_patch = (torch.linspace(-1,1,n_1,device=device,dtype = dtype)[:patch_size])
         y_patch = y_patch - y_patch[patch_size//2]
     else:
-        x_patch = (torch.arange(-patch_size//2+1,patch_size//2+1, device=device)*2/n_2)
-        y_patch = (torch.arange(-patch_size//2+1,patch_size//2+1,device=device)*2/n_1)
+        x_patch = (torch.arange(-patch_size//2+1,patch_size//2+1, device=device , dtype = dtype)*2/n_2)
+        y_patch = (torch.arange(-patch_size//2+1,patch_size//2+1,device=device,dtype = dtype)*2/n_1)
 
     xx_pathc, yy_pathc = torch.meshgrid(x_patch, y_patch, indexing='xy')
-    points_patch = torch.zeros((patch_size*patch_size,2),device=device)
+    points_patch = torch.zeros((patch_size*patch_size,2),device=device,dtype = dtype)
     points_patch[:,0] = xx_pathc.flatten()
     points_patch[:,1] = yy_pathc.flatten()
 
@@ -164,10 +165,10 @@ def generate_patches_from_volume_location(volume_location : torch.Tensor,
         for index, projections_i in enumerate(projections):
             if type(projection_locations) == list:
                 n_projections = len(angles[index])
-                patches = torch.zeros((n_projections,n_points,patch_size,patch_size),device=device)
+                patches = torch.zeros((n_projections,n_points,patch_size,patch_size),device=device,dtype = dtype)
                 projection_locations_current = projection_locations[index]
             else:
-                patches = torch.zeros((n_projections,n_points,patch_size,patch_size),device=device)
+                patches = torch.zeros((n_projections,n_points,patch_size,patch_size),device=device,dtype = dtype)
                 projection_locations_current =projection_locations
 
             for i in range(n_projections):
@@ -185,7 +186,7 @@ def generate_patches_from_volume_location(volume_location : torch.Tensor,
         return vol_samples,patches_list
     else:
 
-        patches = torch.zeros((n_projections,n_points,patch_size,patch_size),device=device)
+        patches = torch.zeros((n_projections,n_points,patch_size,patch_size),device=device,dtype = dtype)
 
         for i in range(n_projections):
             i_patch_points = projection_locations[i].reshape(-1,2)

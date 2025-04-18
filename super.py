@@ -44,6 +44,30 @@ if __name__ == "__main__":
         num_workers = 0
 
 
+    if type(device) is int:
+        multi_gpu = False
+    else:
+        # mult_gpu = True
+        # GPUS = device
+        # device = GPUS[0]
+        GPUS = []
+        for i in range(torch.cuda.device_count()):
+            try:
+                torch.cuda.get_device_properties(i)
+                GPUS.append(i)
+            except AssertionError:
+                pass
+        if len(GPUS)>1:
+            print("Using multiple GPUs")
+            multi_gpu = True
+            device = GPUS[0]
+        else:
+            multi_gpu = False
+            device = GPUS[0]
+
+        print("Using GPUs: ", GPUS)
+
+
     eval = Evaluator(model_path = model_path , device = device)
 
     proj_path = config["proj_file"]
@@ -51,17 +75,6 @@ if __name__ == "__main__":
     projection = projection - np.mean(projection)
     projection = projection/np.std(projection)
 
-
-    if len(angles) > 41:
-        print("We resample the tilt-series and we need exactly 41 tilt at the moment.")
-        ind_sangles = np.linspace(0,len(angles)-1,41).astype(int)
-        angles = angles[ind_sangles]
-        projection = projection[ind_sangles]
-
-    if len(angles)<41:
-        print("Impossible to work with less than 41 projections at the moment.")
-        import sys
-        sys.exit(0)
 
        
     
@@ -106,29 +119,22 @@ if __name__ == "__main__":
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    ortho_slice = eval.orthogonal_reconstruction(projection = projection,
-                                                angles = angles,
-                                                N3 = N3,
-                                                N3_scale = 0.5,
-                                                batch_size = batch_size)
-    
 
-    # output_dict = {'x_y_slice':x_y_slice, 'x_z_slice':x_z_slice, 'y_z_slice':y_z_slice}
-
-
-    #Save the orthogonal slices as mrc files
-    for key in ortho_slice.keys():
-        save_path = os.path.join(save_dir,save_name + f"_{key}.mrc")
-        out = mrcfile.new(save_path,overwrite = True)
-        out.set_data(ortho_slice[key])
-        out.close()
-
-    vol = eval.full_reconstruction(projection = projection, 
+    if multi_gpu:
+        vol = eval.reconstruct(projection = projection, 
                                    angles= angles,
                                    N3 = N3, 
                                    N3_scale = 0.5,
                                    batch_size = batch_size, 
-                                   num_workers=num_workers)
+                                   num_workers=num_workers,
+                                   gpu_ids= GPUS)
+    else:
+        vol = eval.reconstruct(projection = projection, 
+                                    angles= angles,
+                                    N3 = N3, 
+                                    N3_scale = 0.5,
+                                    batch_size = batch_size, 
+                                    num_workers=num_workers)
     
     vol = np.moveaxis(vol,2,0)
     if N1 > N2:
@@ -139,5 +145,5 @@ if __name__ == "__main__":
     save_path = os.path.join(save_dir,save_name)
 
     out = mrcfile.new(save_path,overwrite = True)
-    out.set_data(vol)
+    out.set_data(vol.astype(np.float32))
     out.close()

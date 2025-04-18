@@ -1,6 +1,8 @@
 
 # Make the data directory if it doesn't exist
-mkdir -p ./data/ribosome
+mkdir -p ./data/
 # Download the ribosome data
-wget https://drive.switch.ch/index.php/s/3DFTZoO1CDQa6Uz/download -O ./data/ribosome/projection.mrcs
-wget https://drive.switch.ch/index.php/s/3h3iyYgecrwBhyo/download -O ./data/ribosome/angles.tlt
+wget https://drive.switch.ch/index.php/s/fWr8ZcFQiiU0OJv/download -O ribo_data.zip
+unzip ribo_data.zip -d ./data/
+# Remove the zip file
+rm ribo_data.zip

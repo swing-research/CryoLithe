@@ -3,6 +3,14 @@ Official repo for CryoLithe ([paper](https://arxiv.org/abs/2501.15246))
 
 CryoLithe is a supervised machine learning method to directly reconstruct the tomogram from aligned cryo-ET tilt series. The methods is trained on real measurements using FBP+cryo-CARE+IsoNet reconstructions as the reference. The network exploits the imaging geometry to extract small patches from the tilt series to recover the volume. Thus it is practically robust to various data distirbutions. The method provides FBP+cryo-CARE+IsoNet type of reconstructions in a fraction of the time.
 
+
+## Updates 
+- 20.04.2025: 
+    - New models that can recover the volume from arbitrary number of tilt series. 
+    - Update the pytorch version to 2.6.0 (the code was tested with 2.6.0)
+    - Update the README file to include the new models and the new requirements.
+    - Multi-GPU infernence is now supported.
+
 ## Installation
 Download the repository using the command:
 ```bash
@@ -12,7 +20,7 @@ git clone git@github.com:swing-research/CryoLithe.git
 
 Create a new conda environment using the command:
 ```bash
-conda create -n CryoLithe python=3.8
+conda create -n CryoLithe python=3.9
 ```
 
 
@@ -21,7 +29,7 @@ Activate the environment using the command:
 ```bash
 conda activate CryoLithe
 ```
-Install a version of PyTorch that is compatible with your system using the command:
+Install PyTorch 2.6 (or a compatible version). The code was tested with PyTorch 2.6
 ```bash
 pip3 install torch torchvision torchaudio
 ```
@@ -43,8 +51,13 @@ This will download the trained models and place them in the `trained_models` dir
 - `checkpoint.pth` - the trained model
 - `config.json` - the configuration file used to train the model contains the model architecture and hyperparameters
 
+Currently, we provide two models:
+ - 'sliceset' - trained to recover the volume one voxel at a time
+ - 'sliceset_wavelet' - trained to recover the wavelet coefficients of the volume
+
+ **Note**: The wavelet model is 8x faster than the sliceset model. However, the reconstruction looks sligthly low resolution compared to the 
+ sliceset model
 ## Running the model
-**Note**: The current model is designed to work only with tilt series containing **41 projections**.  
 
 We are actively working on extending the model to support arbitrary tilt series, which will be released in an upcoming update.
 
@@ -85,4 +98,10 @@ The data is downloaded from the EMPIAR 10045 dataset and is a subset of the full
 To run the script, use the following command:
 ```bash
 python3 super.py --config ribo80.yaml
+```
+
+## Using the Wavelet Model
+Run the script using the following command:
+```bash
+python3 super.py --config ribo80_wavelet.yaml
 ```
