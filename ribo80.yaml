@@ -8,7 +8,7 @@ angle_file: "./data/ribosome/angles.tlt"
 
 # Save location
 save_dir: "./results/ribo_slice_set/"
-save_name: "./vol_ribo_single_gpu_wavelet.mrc"
+save_name: "./vol_ribo_single_gpu.mrc"
 
 # GPU device to be used
 device: 0 # Use [0,1] to use gpus with id 0 and 1.
