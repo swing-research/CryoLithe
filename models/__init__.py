@@ -3,7 +3,7 @@ from .slicemlp import sliceMLP, sliceMlp_v2,sliceMlp_mulitnet
 from .standardmlp import standardMLP
 from .adjoint import adjoint,adjoint_patch
 from .model_wrapper import model_wrapper
-
+from .sliceSet import SliceSet
 
 def get_model(n_projections: int, type: str, **kwargs):
     """
@@ -19,6 +19,8 @@ def get_model(n_projections: int, type: str, **kwargs):
         return sliceMlp_mulitnet(n_projections = n_projections,**kwargs)
     elif type == "adjoint":
         return adjoint()
+    elif type == "SliceSet":
+        return SliceSet(n_projections = n_projections,**kwargs)
     elif type == "adjoint_patch":
         return adjoint_patch(**kwargs)
     else:

@@ -17,9 +17,7 @@ class model_wrapper(nn.Module):
         super(model_wrapper, self).__init__()
 
         self.model = model
-        #self.projections = projections
-        #self.angles = angles
-        #self.patch_scale = patch_scale
+
         self.scale = scale
         self.configs = configs
 
@@ -28,9 +26,12 @@ class model_wrapper(nn.Module):
         self.register_buffer("volume_dummy", volume_dummy)
         self.register_buffer("patch_scale", patch_scale)
 
-        #self.register_buffer("volume_dummy", torch.zeros(100, 100, 100))
 
     def forward(self, points):
+        """
+        Wrapper for the model so that it can be used with the DataParallel
+        points: Bx3 
+        """
 
 
         _, projection_patches = generate_patches_from_volume_location(points, self.volume_dummy ,
@@ -39,5 +40,10 @@ class model_wrapper(nn.Module):
                                                                             patch_size = self.configs.model.patch_size,
                                                                         scale=self.scale,
                                                                         patch_scale= self.patch_scale)
-        vol_est = self.model(projection_patches)
+        
+        if self.configs.training.use_angle:
+            angle_info = self.angles.unsqueeze(0).repeat(projection_patches.shape[0],1)
+            vol_est = self.model(projection_patches.half(),angle_info.half())
+        else:
+            vol_est = self.model(projection_patches.half())
         return vol_est
