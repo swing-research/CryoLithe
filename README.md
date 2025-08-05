@@ -5,7 +5,7 @@ CryoLithe is a supervised machine learning method to directly reconstruct the to
 
 
 ## Updates 
-- 20.04.2025: 
+- 18.04.2025: 
     - New models that can recover the volume from arbitrary number of tilt series. 
     - Update the pytorch version to 2.6.0 (the code was tested with 2.6.0)
     - Update the README file to include the new models and the new requirements.
