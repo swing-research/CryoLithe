@@ -1,0 +1,37 @@
+# Directory containing the traned model
+model_dir: "./trained_models/sliceset_wavelet/"
+
+# Path to the list of projection files we use the same dataset here for example
+proj_file: 
+ - "./data/ribosome/projections.mrc"
+ - "./data/ribosome/projections.mrc"
+
+# Path to the angle file in degrees
+angle_file: 
+ - "./data/ribosome/angles.tlt"
+ - "./data/ribosome/angles.tlt"
+
+# Save location
+save_dir: "./results/ribo_slice_set_wavelet_list/"
+# List of save names for each projection
+save_name: 
+ - "./vol_ribo_single_gpu.mrc"
+ - "./vol_ribo2_single_gpu.mrc"
+
+# GPU device to be used
+device: 0 # Use [0,1] to use gpus with id 0 and 1.
+multi_gpu: False
+# Pre prcessing Projection to desired resolution
+downsample_projections: False
+downsample_factor: 0.25
+anti_alias: True
+# Volume size along the z axis (constructs center-N3//2 to center+N3//2)
+N3: 
+ - 200
+ - 200
+
+#Model Memory Parameters
+batch_size: 100_000
+
+# CPU threads
+num_workers: 4
