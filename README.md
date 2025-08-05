@@ -10,6 +10,9 @@ CryoLithe is a supervised machine learning method to directly reconstruct the to
     - Update the pytorch version to 2.6.0 (the code was tested with 2.6.0)
     - Update the README file to include the new models and the new requirements.
     - Multi-GPU infernence is now supported.
+- 05.08.2025
+    - Added support to reconstruct a list of volumes from a single yaml file.
+    - Added a new script `super-list.py` to run the model on a list of projections.
 
 ## Installation
 Download the repository using the command:
@@ -104,4 +107,16 @@ python3 super.py --config ribo80.yaml
 Run the script using the following command:
 ```bash
 python3 super.py --config ribo80_wavelet.yaml
+```
+
+## Running the model on a list of projections
+The script `super-list.py` is used to run the trained model on a list of projections. Additionally, we provide a yaml file that can run the model on a list of projections.  In the `ribo80_list.yaml` file, you can specify multiple projection files, angle files, save names and N3 values for each projection. The script will then process each set of files in the list and save the corresponding volumes. Note that in the example yaml file, we are running the model on the same data twice, but you can modify it to have different projection data. You need to change the following fields in the yaml file:
+- `proj_file` - list of paths to the projection files
+- `angles_file` - list of paths to the angles files
+- `save_name` - list of names for the output volumes
+- `N3` - list of sizes for the volumes along the z-axis
+
+You can run the script using the following command:
+```bash
+python3 super-list.py --config ribo80_list.yaml
 ```
