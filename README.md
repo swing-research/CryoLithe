@@ -57,8 +57,9 @@ This will download the trained models and place them in the `trained_models` dir
 - `config.json` - the configuration file used to train the model contains the model architecture and hyperparameters
 
 Currently, we provide two models:
- - 'sliceset' - trained to recover the volume one voxel at a time
- - 'sliceset_wavelet' - trained to recover the wavelet coefficients of the volume
+ - 'cryolithe_pixel' - trained to recover the volume one pixel at a time
+ - 'cryolithe_21' - trained to recover the wavelet coefficients of the volume. Uses patches of size 21x21 from the projections.
+ - 'cryolithe_11' - trained to recover the wavelet coefficients of the volume. Uses patches of size 11x11 from the projections. The model is a bit faster but the reconstructions are slightly worse than the 21x21 model.
 
  **Note**: The wavelet model is 8x faster than the sliceset model. However, the reconstruction looks sligthly low resolution compared to the 
  sliceset model
