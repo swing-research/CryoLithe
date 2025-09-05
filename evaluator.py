@@ -93,7 +93,7 @@ class Evaluator:
         if N3 is None:
             N3 = int(max(N1,N2)*N3_scale)
 
-        vol_dummy = torch.randn(N1,N2,N3,dtype=torch.float32,device=self.device)
+        vol_dummy = torch.randn(N1,N2,N3,dtype=torch.float32,device='cpu')
 
 
         if self.configs.training.use_wavelet_trainer:
@@ -152,7 +152,7 @@ class Evaluator:
             v_est_set_np = np.moveaxis(np.moveaxis(np.concatenate(vol_est_set,axis=1).reshape(-1,N3,N1,N2),1,-1),2,1)
 
         if self.configs.training.use_wavelet_trainer:   
-            v_est_set_t = torch.tensor(v_est_set_np, dtype=torch.float32, device=self.device)
+            v_est_set_t = torch.tensor(v_est_set_np, dtype=torch.float32, device='cpu')
             vol_est_rec = wavelet_multilevel_reconstruction(v_est_set_t, 
                                                             wavelet= self.configs.training.wavelet).cpu().numpy()
         else:

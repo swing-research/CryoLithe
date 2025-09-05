@@ -1,5 +1,5 @@
 # Directory containing the traned model
-model_dir: "./trained_models/sliceset_wavelet/"
+model_dir: "./trained_models/cryolithe_21/"
 
 # Path to the list of projection files we use the same dataset here for example
 proj_file: 

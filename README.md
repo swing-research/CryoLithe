@@ -13,6 +13,8 @@ CryoLithe is a supervised machine learning method to directly reconstruct the to
 - 05.08.2025
     - Added support to reconstruct a list of volumes from a single yaml file.
     - Added a new script `super-list.py` to run the model on a list of projections.
+- 05.09.2025
+    - Added new trained models that were trained on a larger dataset. 
 
 ## Installation
 Download the repository using the command:
@@ -120,3 +122,10 @@ You can run the script using the following command:
 ```bash
 python3 super-list.py --config ribo80_list.yaml
 ```
+
+## Downloading the older models
+If you want to use the older models, you can download them using the provided download_old.sh script:
+```bashbash
+bash download_old.sh
+```
+

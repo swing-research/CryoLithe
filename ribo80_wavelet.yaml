@@ -1,5 +1,5 @@
 # Directory containing the traned model
-model_dir: "./trained_models/sliceset_wavelet/"
+model_dir: "./trained_models/cryolithe_21/"
 
 # Path to the projection file
 proj_file: "./data/ribosome/projections.mrc"
