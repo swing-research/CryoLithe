@@ -14,7 +14,7 @@ from utils.wavelet_utils import wavelet_multilevel_decomposition, wavelet_multil
 
 
 class Evaluator:
-    def __init__(self, model_path , device):
+    def __init__(self, model_path , device, patch_scale = None):
 
         configs = config_dict.ConfigDict(json.load(open(model_path + '/config.json')))
         self.configs = configs
@@ -22,7 +22,12 @@ class Evaluator:
 
         self.n_projections = configs.data.n_projections
 
-        checkpoint = torch.load(model_path + '/checkpoint.pth',map_location=torch.device(device), weights_only=False)
+        try:
+            checkpoint = torch.load(model_path + '/checkpoint.pth',map_location=torch.device(device), weights_only=False)
+        except:
+            print('Load Backup Checkpoint')
+            checkpoint = torch.load(model_path + '/checkpoint_BP.pth',map_location=torch.device(device), weights_only=False)
+
 
         
         model = get_model(n_projections = self.n_projections, **configs.model).to(device)
@@ -36,11 +41,15 @@ class Evaluator:
         else:
             ramp = None
 
-        if configs.training.learn_patch_scale:
-            patch_scale = checkpoint['patch_scale'].to(device)
-            patch_scale = patch_scale.detach()
+        if patch_scale is None:
+            if configs.training.learn_patch_scale:
+                patch_scale = checkpoint['patch_scale'].to(device)
+                patch_scale = patch_scale.detach()
+            else:
+                patch_scale = torch.tensor([configs.training.patch_scale_init]).to(device)
         else:
-            patch_scale = torch.tensor([configs.training.patch_scale_init]).to(device)
+            print('Using user provided patch scale:', patch_scale)
+            patch_scale = torch.tensor([patch_scale]).to(device)
 
 
         if configs.use_2D_fitlers or configs.use_2D_filters:
@@ -96,6 +105,8 @@ class Evaluator:
         vol_dummy = torch.randn(N1,N2,N3,dtype=torch.float32,device='cpu')
 
 
+        if hasattr(self.configs.training, 'use_wavelet_trainer') is False:
+            self.configs.training.use_wavelet_trainer = False
         if self.configs.training.use_wavelet_trainer:
             vol_wavelet = wavelet_multilevel_decomposition(vol_dummy, 
                                                         self.configs.training.wavelet, 
