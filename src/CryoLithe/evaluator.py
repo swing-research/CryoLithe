@@ -2,7 +2,9 @@
 Load the model and run on the given data
 """
 from ml_collections import config_dict
+import os
 import json
+import sys
 import torch
 from .models import get_model, model_wrapper
 from .utils.utils import custom_ramp_fft
@@ -10,6 +12,11 @@ from tqdm import tqdm
 import numpy as np
 from torch.utils.data import DataLoader
 from .utils.wavelet_utils import wavelet_multilevel_decomposition, wavelet_multilevel_reconstruction
+from . import filter_models as _filter_models
+
+
+# Backward-compatibility for old checkpoints pickled with legacy module paths.
+sys.modules.setdefault("filter_models", _filter_models)
 
 
 
@@ -23,10 +30,14 @@ class Evaluator:
         self.n_projections = configs.data.n_projections
 
         try:
-            checkpoint = torch.load(model_path + '/checkpoint.pth',map_location=torch.device(device), weights_only=False)
-        except:
+            print('Load Checkpoint')
+            model_path_update = os.path.join(model_path,'checkpoint.pth')
+            checkpoint = torch.load(model_path_update,map_location=torch.device(device), weights_only=False)
+        except Exception as e:
+            #print error
+            print('Error loading checkpoint:', e)
             print('Load Backup Checkpoint')
-            checkpoint = torch.load(model_path + '/checkpoint_BP.pth',map_location=torch.device(device), weights_only=False)
+            checkpoint = torch.load(os.path.join(model_path, 'checkpoint_BP.pth'),map_location=torch.device(device), weights_only=False)
 
 
         

@@ -142,6 +142,7 @@ def _run_single_reconstruction(
     import mrcfile
     import numpy as np
     import torch
+    import os
 
     angles = np.loadtxt(angle_file)
 
@@ -205,7 +206,7 @@ def _run_single_reconstruction(
     elif n2 > n1:
         vol = vol[:, pad:-pad]
 
-    save_path = str(Path(save_dir) / save_name)
+    save_path = os.path.join(save_dir, save_name)
     out = mrcfile.new(save_path, overwrite=True)
     out.set_data(vol.astype(np.float32))
     out.close()
