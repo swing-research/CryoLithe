@@ -31,6 +31,7 @@ class Evaluator:
 
         try:
             print('Load Checkpoint')
+            print('Model path:', model_path)
             model_path_update = os.path.join(model_path,'checkpoint.pth')
             checkpoint = torch.load(model_path_update,map_location=torch.device(device), weights_only=False)
         except Exception as e:

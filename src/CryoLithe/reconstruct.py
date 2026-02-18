@@ -5,87 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, List, Optional, Tuple, Union
 
-
-def _resolve_path_value(value: Any, base_dir: Path) -> Any:
-    if isinstance(value, str):
-        p = Path(value)
-        if not p.is_absolute():
-            return str((base_dir / p).resolve())
-        return value
-    if isinstance(value, list):
-        return [_resolve_path_value(v, base_dir) for v in value]
-    return value
-
-
-def resolve_config_paths(config: dict[str, Any], config_path: Union[str, Path]) -> dict[str, Any]:
-    """Resolve relative filesystem paths against the YAML file directory."""
-    base_dir = Path(config_path).resolve().parent
-    path_keys = {"model_dir", "proj_file", "angle_file", "save_dir"}
-
-    resolved = dict(config)
-    for key in path_keys:
-        if key in resolved and resolved[key] is not None:
-            resolved[key] = _resolve_path_value(resolved[key], base_dir)
-    return resolved
-
-
-def load_config(config_path: Union[str, Path]) -> dict[str, Any]:
-    import yaml
-
-    with open(config_path, "r", encoding="utf-8") as file:
-        config = yaml.safe_load(file) or {}
-    return resolve_config_paths(config, config_path)
-
-
-def load_default_config() -> dict[str, Any]:
-    import yaml
-
-    defaults_path = Path(__file__).with_name("defaults.yaml")
-    with open(defaults_path, "r", encoding="utf-8") as file:
-        return yaml.safe_load(file) or {}
-
-
-def _normalize_override_paths(overrides: dict[str, Any]) -> dict[str, Any]:
-    """Resolve CLI-provided relative paths against current working directory."""
-    path_keys = {"model_dir", "proj_file", "angle_file", "save_dir"}
-    normalized = dict(overrides)
-    cwd = Path.cwd()
-
-    for key in path_keys:
-        value = normalized.get(key)
-        if isinstance(value, str) and value:
-            p = Path(value)
-            normalized[key] = str((cwd / p).resolve()) if not p.is_absolute() else str(p)
-
-    return normalized
-
-
-def build_reconstruction_config(
-    config_path: Optional[Union[str, Path]] = None,
-    overrides: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-    """Build runtime config from defaults.yaml + optional user YAML + optional CLI overrides."""
-    config = load_default_config()
-
-    if config_path is not None:
-        config.update(load_config(config_path))
-
-    if overrides:
-        non_none_overrides = {k: v for k, v in overrides.items() if v is not None}
-        config.update(_normalize_override_paths(non_none_overrides))
-
-    return config
-
-
-def validate_reconstruction_config(config: dict[str, Any]) -> None:
-    required = ["model_dir", "proj_file", "angle_file", "save_dir", "save_name", "N3"]
-    missing = [key for key in required if config.get(key) is None]
-    if missing:
-        missing_options = ", ".join(f"--{item.replace('_', '-')}" for item in missing)
-        raise ValueError(
-            f"Missing required config fields: {', '.join(missing)}. "
-            f"Provide them via defaults.yaml, --config, or CLI options ({missing_options})."
-        )
+from .config import resolve_or_download_model_dir, validate_reconstruction_config
 
 
 def _expand_to_len(name: str, value: Any, length: int) -> list[Any]:
@@ -141,8 +61,8 @@ def _run_single_reconstruction(
 ) -> str:
     import mrcfile
     import numpy as np
-    import torch
     import os
+    import torch
 
     angles = np.loadtxt(angle_file)
 
@@ -218,10 +138,11 @@ def run_reconstruction(config: dict[str, Any]) -> Union[str, List[str]]:
     from .evaluator import Evaluator
 
     validate_reconstruction_config(config)
+    model_path = resolve_or_download_model_dir(config)
+    config["model_dir"] = model_path
 
     device, multi_gpu, gpu_ids = _detect_devices(config["device"])
 
-    model_path = config["model_dir"]
     batch_size = config["batch_size"]
     downsample = config["downsample_projections"]
     downsample_factor = config["downsample_factor"]

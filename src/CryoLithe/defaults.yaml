@@ -16,4 +16,4 @@ batch_size: 100000
 num_workers: 0
 
 #model parameters
-patch_scale: 1.0
+patch_scale: null
