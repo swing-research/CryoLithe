@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, List, Optional, Tuple, Union
 
 
 def _resolve_path_value(value: Any, base_dir: Path) -> Any:
@@ -17,7 +17,7 @@ def _resolve_path_value(value: Any, base_dir: Path) -> Any:
     return value
 
 
-def resolve_config_paths(config: dict[str, Any], config_path: str | Path) -> dict[str, Any]:
+def resolve_config_paths(config: dict[str, Any], config_path: Union[str, Path]) -> dict[str, Any]:
     """Resolve relative filesystem paths against the YAML file directory."""
     base_dir = Path(config_path).resolve().parent
     path_keys = {"model_dir", "proj_file", "angle_file", "save_dir"}
@@ -29,7 +29,7 @@ def resolve_config_paths(config: dict[str, Any], config_path: str | Path) -> dic
     return resolved
 
 
-def load_config(config_path: str | Path) -> dict[str, Any]:
+def load_config(config_path: Union[str, Path]) -> dict[str, Any]:
     import yaml
 
     with open(config_path, "r", encoding="utf-8") as file:
@@ -61,8 +61,8 @@ def _normalize_override_paths(overrides: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_reconstruction_config(
-    config_path: str | Path | None = None,
-    overrides: dict[str, Any] | None = None,
+    config_path: Optional[Union[str, Path]] = None,
+    overrides: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Build runtime config from defaults.yaml + optional user YAML + optional CLI overrides."""
     config = load_default_config()
@@ -98,7 +98,7 @@ def _expand_to_len(name: str, value: Any, length: int) -> list[Any]:
     return [value] * length
 
 
-def _detect_devices(config_device: Any) -> tuple[int, bool, list[int] | None]:
+def _detect_devices(config_device: Any) -> Tuple[int, bool, Optional[List[int]]]:
     import torch
 
     if isinstance(config_device, int):
@@ -127,7 +127,7 @@ def _run_single_reconstruction(
     evaluator: Any,
     device: int,
     multi_gpu: bool,
-    gpu_ids: list[int] | None,
+    gpu_ids: Optional[List[int]],
     proj_file: str,
     angle_file: str,
     n3: int,
@@ -213,7 +213,7 @@ def _run_single_reconstruction(
     return save_path
 
 
-def run_reconstruction(config: dict[str, Any]) -> str | list[str]:
+def run_reconstruction(config: dict[str, Any]) -> Union[str, List[str]]:
     from .evaluator import Evaluator
 
     validate_reconstruction_config(config)
