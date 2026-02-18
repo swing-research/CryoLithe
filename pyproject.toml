@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "CryoLithe"
 version = "0.1.0"
-description = "Cryo-ET volume reconstruction tools"
+description = "Cryo-ET volume reconstruction from tilt-series projections localized mlps"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [
-  { name = "CryoLithe contributors" }
+  { name = "Vinith Kishore", email = "vinith.kishore@unibas.ch"}
 ]
 dependencies = [
   "typer>=0.12,<1",
