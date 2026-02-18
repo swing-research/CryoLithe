@@ -8,9 +8,11 @@ import typer
 
 from .reconstruct import build_reconstruction_config, run_reconstruction
 
-app = typer.Typer(help="CryoLithe command line interface", 
-                  no_args_is_help=True,
-                  add_completion=False,)
+app = typer.Typer(
+    help="CryoLithe command line interface",
+    pretty_exceptions_show_locals=False,
+    add_completion=False,
+)
 
 
 @app.command("reconstruct")
@@ -54,6 +56,25 @@ def reconstruct(
             overrides=overrides,
         )
     )
+
+
+@app.command("download")
+def download(
+    local_dir: Optional[str] = typer.Option(
+        None,
+        "--local-dir",
+        help="Directory to download model files. If omitted, files stay in HF cache.",
+    )
+) -> None:
+    """Download pretrained models from Hugging Face Hub."""
+    from huggingface_hub import snapshot_download
+
+    path = snapshot_download(
+        repo_id="Vinith2/CryoLithe",
+        local_dir=local_dir,
+        local_dir_use_symlinks=False,
+    )
+    typer.echo(path)
 
 
 def main() -> None:
