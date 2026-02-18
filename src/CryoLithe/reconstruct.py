@@ -1,14 +1,10 @@
 """Reconstruction pipeline helpers."""
 
 from __future__ import annotations
-import torch
+
 from pathlib import Path
 from typing import Any
-import mrcfile
-import numpy as np
-import torch
 
-from .evaluator import Evaluator
 
 def _resolve_path_value(value: Any, base_dir: Path) -> Any:
     if isinstance(value, str):
@@ -92,8 +88,18 @@ def validate_reconstruction_config(config: dict[str, Any]) -> None:
         )
 
 
+def _expand_to_len(name: str, value: Any, length: int) -> list[Any]:
+    if isinstance(value, list):
+        if len(value) != length:
+            raise ValueError(
+                f"'{name}' must have length {length} when using a list of projections, got {len(value)}."
+            )
+        return value
+    return [value] * length
+
+
 def _detect_devices(config_device: Any) -> tuple[int, bool, list[int] | None]:
-    
+    import torch
 
     if isinstance(config_device, int):
         return config_device, False, None
@@ -116,33 +122,34 @@ def _detect_devices(config_device: Any) -> tuple[int, bool, list[int] | None]:
     return gpus[0], multi_gpu, gpus
 
 
-def run_reconstruction(config: dict[str, Any]) -> str:
+def _run_single_reconstruction(
+    *,
+    evaluator: Any,
+    device: int,
+    multi_gpu: bool,
+    gpu_ids: list[int] | None,
+    proj_file: str,
+    angle_file: str,
+    n3: int,
+    save_dir: str,
+    save_name: str,
+    downsample: bool,
+    downsample_factor: float,
+    anti_alias: bool,
+    batch_size: int,
+    num_workers: int,
+) -> str:
+    import mrcfile
+    import numpy as np
+    import torch
 
+    angles = np.loadtxt(angle_file)
 
-    validate_reconstruction_config(config)
-
-    device, multi_gpu, gpu_ids = _detect_devices(config["device"])
-
-    model_path = config["model_dir"]
-    batch_size = config["batch_size"]
-    downsample = config["downsample_projections"]
-    n3 = config["N3"]
-    patch_scale = config.get("patch_scale", None)
-    save_dir = config["save_dir"]
-    save_name = config["save_name"]
-    angles = np.loadtxt(config["angle_file"])
-    num_workers = config.get("num_workers", 0)
-    print("num_workers:", num_workers)
-
-    evaluator = Evaluator(model_path=model_path, device=device, patch_scale=patch_scale)
-
-    projection = mrcfile.open(config["proj_file"], permissive=True).data
+    projection = mrcfile.open(proj_file, permissive=True).data
     projection = projection - np.mean(projection)
     projection = projection / np.std(projection)
 
     if downsample:
-        downsample_factor = config["downsample_factor"]
-        anti_alias = config["anti_alias"]
         proj_ds_set = []
         for proj in projection:
             proj_t = torch.tensor(proj, device=device, dtype=torch.float32)
@@ -204,3 +211,56 @@ def run_reconstruction(config: dict[str, Any]) -> str:
     out.close()
 
     return save_path
+
+
+def run_reconstruction(config: dict[str, Any]) -> str | list[str]:
+    from .evaluator import Evaluator
+
+    validate_reconstruction_config(config)
+
+    device, multi_gpu, gpu_ids = _detect_devices(config["device"])
+
+    model_path = config["model_dir"]
+    batch_size = config["batch_size"]
+    downsample = config["downsample_projections"]
+    downsample_factor = config["downsample_factor"]
+    anti_alias = config["anti_alias"]
+    patch_scale = config.get("patch_scale", None)
+    save_dir = config["save_dir"]
+    num_workers = config.get("num_workers", 0)
+    print("num_workers:", num_workers)
+
+    evaluator = Evaluator(model_path=model_path, device=device, patch_scale=patch_scale)
+
+    proj_files = config["proj_file"]
+    if not isinstance(proj_files, list):
+        proj_files = [proj_files]
+
+    angle_files = _expand_to_len("angle_file", config["angle_file"], len(proj_files))
+    save_names = _expand_to_len("save_name", config["save_name"], len(proj_files))
+    n3_values = _expand_to_len("N3", config["N3"], len(proj_files))
+
+    saved_paths: list[str] = []
+    for idx, proj_file in enumerate(proj_files):
+        if len(proj_files) > 1:
+            print(f"Reconstructing volume {idx + 1}/{len(proj_files)}: {proj_file}")
+
+        save_path = _run_single_reconstruction(
+            evaluator=evaluator,
+            device=device,
+            multi_gpu=multi_gpu,
+            gpu_ids=gpu_ids,
+            proj_file=proj_file,
+            angle_file=angle_files[idx],
+            n3=n3_values[idx],
+            save_dir=save_dir,
+            save_name=save_names[idx],
+            downsample=downsample,
+            downsample_factor=downsample_factor,
+            anti_alias=anti_alias,
+            batch_size=batch_size,
+            num_workers=num_workers,
+        )
+        saved_paths.append(save_path)
+
+    return saved_paths if len(saved_paths) > 1 else saved_paths[0]
