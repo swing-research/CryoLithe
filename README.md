@@ -180,7 +180,6 @@ cryolithe reconstruct \
     --device 0 \
     --n3 256 \ # The size of the volume along the z-axis, you can modify this based on your data
     --batch-size 100000  # Depends on the memory of your GPU
-``
 
 If the model directory is not provided, the reconstruct code will choose the wavelet model by default. If you want to use the pixel model, you can use the flag `--pixel` to specify that you want to use the pixel model. For example:
 ```bash
