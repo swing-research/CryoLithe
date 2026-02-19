@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 HF_MODEL_REPO_ID = "Vinith2/CryoLithe"
+HF_SAMPLE_DATA_REPO_ID = "Vinith2/CryoLithe-sample-tiltseries"
 PREFERRED_MODEL_DIRS = ("cryolithe", "cryolithe-pixel")
 
 

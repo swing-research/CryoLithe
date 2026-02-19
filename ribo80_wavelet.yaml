@@ -1,14 +1,14 @@
 # Directory containing the traned model
-model_dir: "./trained_models/cryolithe_21/"
+model_dir: "./trained_models/cryolithe/"
 
 # Path to the projection file
-proj_file: "./data/ribosome/projections.mrc"
+proj_file: "./cryolithe-sample-data/projections.mrc"
 # Path to the angle file in degrees
-angle_file: "./data/ribosome/angles.tlt"
+angle_file: "./cryolithe-sample-data/angles.tlt"
 
 # Save location
-save_dir: "./results/ribo_slice_set/"
-save_name: "./vol_ribo_single_gpu_wavelet.mrc"
+save_dir: "./results/sample_reconstruction/"
+save_name: "./vol_sample.mrc"
 
 # GPU device to be used
 device: 0 # Use [0,1] for multiple gpus

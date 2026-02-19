@@ -8,6 +8,7 @@ import typer
 
 from .config import (
     HF_MODEL_REPO_ID,
+    HF_SAMPLE_DATA_REPO_ID,
     build_reconstruction_config,
     pick_preferred_model_dir,
 )
@@ -79,9 +80,9 @@ def download(
         help="Whether to write anything to ~/.cryolithe.yaml.",
     ),
     override_model_dir: bool = typer.Option(
-        False,
+        True,
         "--override-model-dir/--no-override-model-dir",
-        help="If model_dir already exists in ~/.cryolithe.yaml, replace it with the newly downloaded path.",
+        help="If model_dir already exists in ~/.cryolithe.yaml, replace it with the newly downloaded path (default: enabled).",
     ),
 ) -> None:
     """Download pretrained models from Hugging Face Hub."""
@@ -117,6 +118,32 @@ def download(
             typer.echo(f"Updated {user_cfg_path} with model_dir: {resolved_path}")
 
     typer.echo(f"Model saved in: {resolved_path}")
+
+
+@app.command("download-sample-data")
+def download_sample_data(
+    local_dir: Optional[str] = typer.Option(
+        None,
+        "--local-dir",
+        help="Directory to download sample data. Defaults to ./cryolithe-sample-data in the current working directory.",
+    ),
+) -> None:
+    """Download sample tilt-series data from Hugging Face dataset repo."""
+    from huggingface_hub import snapshot_download
+    from pathlib import Path
+
+    target_dir = Path(local_dir) if local_dir is not None else (Path.cwd() / "cryolithe-sample-data")
+    if not target_dir.is_absolute():
+        target_dir = (Path.cwd() / target_dir).resolve()
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    file_path = snapshot_download(
+        repo_id=HF_SAMPLE_DATA_REPO_ID,
+        local_dir=str(target_dir),
+        repo_type="dataset",
+        local_dir_use_symlinks=False,
+    )
+    typer.echo(f"Sample data saved in: {file_path}")
 
 
 def main() -> None:

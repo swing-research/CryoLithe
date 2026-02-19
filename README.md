@@ -17,116 +17,150 @@ CryoLithe is a supervised machine learning method to directly reconstruct the to
     - Added new trained models that were trained on a larger dataset. 
 
 ## Installation
-Download the repository using the command:
-```bash
-git clone git@github.com:swing-research/CryoLithe.git
-```
-
 
 Create a new conda environment using the command:
 ```bash
 conda create -n CryoLithe python=3.9
 ```
-
-
-
 Activate the environment using the command:
 ```bash
 conda activate CryoLithe
 ```
-Install PyTorch 2.6 (or a compatible version). The code was tested with PyTorch 2.6
+Install PyTorch 2.6 (or a compatible version). The code was tested with PyTorch 2.6 and 2.8
 ```bash
 pip3 install torch torchvision torchaudio
 ```
 
+###  Install CryoLithe and its dependencies:
+You can install CryoLithe directly from the GitHub repository using pip or clone the repository and install it locally.
 
-Install the required packages using the command:
+
+####  Direct installation (recommended):
+```bash
+pip install git+https://github.com:swing-research/CryoLithe.git
+```
+
+To test the installation, run:
+```bash
+cryolithe --help
+```
+It should display the main commands: `reconstruct`, `download`, and `download-sample-data`
+
+
+#### Local installation from cloned repository (for ones who want to modify the code):
+
+Clone the repository using **one** of the following methods:
+
+**HTTPS**
+```bash
+git clone https://github.com:swing-research/CryoLithe.git
+```
+**SSH (for users with SSH keys configured):**
+```bash
+git clone git@github.com:swing-research/CryoLithe.git
+```
+
+
+Install in editable mode:
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
+To test the installation, run:
+```bash
+cryolithe --help
+```
+It should display the two main commands: `reconstruct` and `download`
 
 ## Downloading the trained models
-The models are stored in switchdrive and can be downloaded using the provided download.sh script:
+The trained models are stored in Hugging Face and can be downloaded using the `cryolithe download` command. You can specify the local directory where you want to save the models using the `--local-dir` flag. For example, to save the models in a directory called `models`, run:
+
 ```bash
-bash download.sh
+cryolithe download --local-dir /path/to/trained/model/
+```
+If you want it to be saved in the Hugging Face cache, then run:
+```bash
+cryolithe download
 ```
 
-This will download the trained models and place them in the `trained_models` directory. It should contain the following files:
-- `checkpoint.pth` - the trained model
-- `config.json` - the configuration file used to train the model contains the model architecture and hyperparameters
+Note that this will create a file called .cryolithe.yaml in your home directory with the path to the models files. This is used by the reconstruct command to load models when you don't specify the path to the model directory. You can modify this file to change the path to the models if you want to move them to a different location. 
+By default, each new `cryolithe download` updates `model_dir` in this file to the newly downloaded model path. If you want to keep the existing path, use:
+```bash
+cryolithe download --no-override-model-dir
+```
+
 
 Currently, we provide two models:
  - 'cryolithe_pixel' - trained to recover the volume one pixel at a time
- - 'cryolithe_21' - trained to recover the wavelet coefficients of the volume. Uses patches of size 21x21 from the projections.
- - 'cryolithe_11' - trained to recover the wavelet coefficients of the volume. Uses patches of size 11x11 from the projections. The model is a bit faster but the reconstructions are slightly worse than the 21x21 model.
+ - 'cryolithe' - trained to recover the wavelet coefficients of the volume.
+
 
  **Note**: The wavelet model is 8x faster than the sliceset model. However, the reconstruction looks sligthly low resolution compared to the 
  sliceset model
-## Running the model
 
-We are actively working on extending the model to support arbitrary tilt series, which will be released in an upcoming update.
-
-The script 'super.py' is used to run the trained model on any new projection of choice.  The script requires a configuration file that contains the necessary information to run the model.
-The configuration file is a yaml file that contains the following fields:
- - 'model_dir' - path to the directory containing the trained model
- - 'proj_file' - path to the projection file
- - 'angle_file' - path to the angles file
- - 'save_dir' - path to the directory where the output will be saved
- - 'save_name' - name of the output volume
- - 'device' - device to run the model on (cpu or cuda)
- - 'downsample_projections' - Whether to downsample the projections or not
- - 'downsample_factor' - factor by which to downsample the volume
- - 'anti_alias' - whether to apply anti-aliasing to the projections or not
- - 'N3' - The size of the volume along the z-axis
- - 'batch_size' - batch size to use when running the model
-
-
-The script can be run using the following command:
+## Downloading sample data
+Download sample tilt-series data from Hugging Face dataset repo:
 ```bash
-python3 super.py --config <path_to_config_file>
+cryolithe download-sample-data
 ```
-
-A sample yaml file is provided as 'ribo80.yaml' which contains the necessary information to run the model on the ribosome dataset.
-
-## Running the model on the ribosome dataset
-
-Download the ribosome dataset using the provided script:
+By default this downloads to `./cryolithe-sample-data` in the directory where you run the command. You can also provide your own path:
 ```bash
-bash download_ribosome.sh
+cryolithe download-sample-data --local-dir /path/to/data
 ```
-This will download the ribosome dataset and place it in the `data` directory. The dataset contains the following files:
-- `projections.mrcs` - the projections of the ribosome dataset
-- `angles.tlt` - the angles of the projections
 
-The data is downloaded from the EMPIAR 10045 dataset and is a subset of the full dataset.
 
-To run the script, use the following command:
+# Reconstructing the tomograms using the trained models
+Once the models are downloaded, you can use them to reconstruct the tomograms from the projections. This is done using the  `reconstruct` command of the `cryolithe` package. The command can take a yaml file as input or you can specify the arguments directly in the command line.  An example yaml file is provided in the repository as [`ribo80.yaml`](ribo80.yaml) which contains the necessary information to run the model on the ribosome dataset.
+**Note**: Make sure to update the paths in the yaml file to point to the correct locations of the projection and angle files and model directory on your system before running the command.
+
 ```bash
-python3 super.py --config ribo80.yaml
+cryolithe reconstruct --config ribo80.yaml
 ```
+You can create your own yaml file with the necessary information to run the model on your data. 
 
-## Using the Wavelet Model
-Run the script using the following command:
+
+Alternatively, a convenient way would be to use the command line arguments to run the model. For example, to run the model on a sample dataset, you can use the following command:
 ```bash
-python3 super.py --config ribo80_wavelet.yaml
+cryolithe reconstruct \ 
+    --model-dir /path/to/trained/model/ 
+    --proj-file /path/to/projections.mrc \
+    --angle-file /path/to/angles.tlt \
+    --save-dir /path/to/save/directory/ \
+    --save-name output_volume.mrc \
+    --device 0 \
+    --n3 256 \ # The size of the volume along the z-axis, you can modify this based on your data
+    --batch_size 100000  # Depends on the memory of your GPU
 ```
 
-## Running the model on a list of projections
-The script `super-list.py` is used to run the trained model on a list of projections. Additionally, we provide a yaml file that can run the model on a list of projections.  In the `ribo80_list.yaml` file, you can specify multiple projection files, angle files, save names and N3 values for each projection. The script will then process each set of files in the list and save the corresponding volumes. Note that in the example yaml file, we are running the model on the same data twice, but you can modify it to have different projection data. You need to change the following fields in the yaml file:
-- `proj_file` - list of paths to the projection files
-- `angles_file` - list of paths to the angles files
-- `save_name` - list of names for the output volumes
-- `N3` - list of sizes for the volumes along the z-axis
-
-You can run the script using the following command:
+You can update other arguments as well based on your data and preferences. For all the parameters and their descriptions, you can run the following command:
 ```bash
-python3 super-list.py --config ribo80_list.yaml
+cryolithe reconstruct --help
 ```
 
-## Downloading the older models
-If you want to use the older models, you can download them using the provided download_old.sh script:
-```bashbash
-bash download_old.sh
+You don't need to specify the path to the model directory if you have downloaded the models using the `cryolithe download` command, as the path to the models is stored in the .cryolithe.yaml file in your home directory. In that case, you can simply run:
+```bash
+cryolithe reconstruct \ 
+    --proj-file /path/to/projections.mrc \
+    --angle-file /path/to/angles.tlt \
+    --save-dir /path/to/save/directory/ \
+    --save-name output_volume.mrc \
+    --device 0 \
+    --n3 256 \ # The size of the volume along the z-axis, you can modify this based on your data
+    --batch_size 100000  # Depends on the memory of your GPU
+``
+
+If the model directory is not provided, the reconstruct code will choose the wavelet model by default. If you want to use the pixel model, you can use the flag `--pixel` to specify that you want to use the pixel model. For example:
+```bash
+cryolithe reconstruct \ 
+    --pixel \
+    --proj-file /path/to/projections.mrc \
+    --angle-file /path/to/angles.tlt \
+    --save-dir /path/to/save/directory/ \
+    --save-name output_volume.mrc \
+    --device 0 \
+    --n3 256 \ # The size of the volume along the z-axis, you can modify this based on your data
+    --batch_size 100000  # Depends on the memory of your GPU
 ```
 
+## Legacy interface (v1)
+The legacy `super.py` and `super-list.py` interface documentation has moved to [`docs/v1-interface.md`](docs/v1-interface.md).
