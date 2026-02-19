@@ -10,7 +10,7 @@ The script `super.py` is used to run the trained model on new projections. The s
 - `angle_file` - path to the angle file
 - `save_dir` - path to the directory where the output will be saved
 - `save_name` - name of the output volume
-- `device` - device to run the model on (`cpu` or `cuda`)
+- `device` - CUDA device id to run the model on (integer, e.g. `0`; older code also supports a list of ids, e.g. `[0, 1]`)
 - `downsample_projections` - whether to downsample the projections
 - `downsample_factor` - factor by which to downsample the volume
 - `anti_alias` - whether to apply anti-aliasing to the projections
