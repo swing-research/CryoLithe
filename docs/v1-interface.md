@@ -53,7 +53,7 @@ python3 super.py --config ribo80_wavelet.yaml
 
 Use `super-list.py` with `ribo80_list.yaml`. You can set multiple values for:
 - `proj_file` - list of projection paths
-- `angles_file` - list of angle paths
+- `angle_file` - list of angle paths
 - `save_name` - list of output names
 - `N3` - list of z-axis sizes
 
