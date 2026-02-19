@@ -66,7 +66,8 @@ def _run_single_reconstruction(
 
     angles = np.loadtxt(angle_file)
 
-    projection = mrcfile.open(proj_file, permissive=True).data
+    with mrcfile.open(proj_file, permissive=True) as m:
+        projection = m.data.copy()
     projection = projection - np.mean(projection)
     projection = projection / np.std(projection)
 
