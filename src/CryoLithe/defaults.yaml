@@ -1,0 +1,19 @@
+# Base/default reconstruction config.
+# Required fields can stay null and be supplied via --config or CLI options.
+
+model_dir: null
+proj_file: null
+angle_file: null
+save_dir: null
+save_name: null
+
+device: 0
+downsample_projections: false
+downsample_factor: 0.25
+anti_alias: true
+N3: null
+batch_size: 100000
+num_workers: 0
+
+#model parameters
+patch_scale: null

@@ -5,7 +5,7 @@ from typing import Union, List
 import torch
 import torch.nn as nn
 
-from models.standardmlp import standardMLP
+from .standardmlp import standardMLP
 
 
 class sliceMLP(nn.Module):
@@ -299,5 +299,4 @@ class sliceMlp_multinet_multiproj(nn.Module):
         return x_op
     
     
-
 

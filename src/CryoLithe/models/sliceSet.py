@@ -9,7 +9,7 @@ Set model for  combining the informations from the patches
 
 from torch import nn
 import torch
-from models.standardmlp import standardMLP
+from .standardmlp import standardMLP
 
 
 

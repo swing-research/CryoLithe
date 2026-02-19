@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "CryoLithe"
+version = "0.1.0"
+description = "Cryo-ET volume reconstruction from tilt-series projections localized mlps"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "Vinith Kishore", email = "vinith.kishore@unibas.ch"}
+]
+dependencies = [
+  "typer>=0.12,<1",
+  "torch>=2.6",
+  "huggingface-hub>=0.23.0",
+  "pyyaml==6.0.1",
+  "ml-collections==0.1.1",
+  "tqdm==4.66.3",
+  "mrcfile==1.4.3",
+  "scikit-image==0.21.0",
+  "ptwt==0.1.9",
+  "numpy==1.26.4"
+]
+
+[project.scripts]
+cryolithe = "CryoLithe.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+CryoLithe = ["defaults.yaml"]

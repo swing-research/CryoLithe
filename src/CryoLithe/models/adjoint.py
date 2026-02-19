@@ -4,7 +4,7 @@ Used to model the adjoint operator.
 """
 import torch.nn as nn
 import torch
-from utils.utils import generate_projections_location
+from ..utils.utils import generate_projections_location
 
 class adjoint(nn.Module):
     """
