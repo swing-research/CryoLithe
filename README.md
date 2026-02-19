@@ -17,6 +17,9 @@ CryoLithe is a supervised machine learning method to directly reconstruct the to
     - Added new trained models that were trained on a larger dataset. 
 
 ## Installation
+You can install CryoLithe using either [**conda**][#using-conda-recommended-if-you-already-use-conda] (recommended if you already use conda) or [**uv**][#using-uv] (lightning fast installer).
+
+### Using conda (recommended if you already use conda):
 
 Create a new conda environment using the command:
 ```bash
@@ -71,6 +74,31 @@ To test the installation, run:
 cryolithe --help
 ```
 It should display the two main commands: `reconstruct` and `download`
+
+
+
+### Using uv: 
+If you don't have uv installed, you can use the following command (if using a linux or macOS system), alternatively  you can follow the instructions in the  official [uv documentation](https://docs.astral.sh/uv/#installation):
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+This will install uv in your system and you need to restart your terminal to take effect.
+
+Once you have uv installed, there are multiple ways to install CryoLithe using uv. Here we will install it as a tool (uv terminology) which allows us to run the `cryolithe` command directly in the terminal without activating a virtual environment. But you uv creates a virtuall environtment internally to manage the dependencies of the tool. To install CryoLithe as a tool, run the following command:
+```bash
+uv tool install git+https://github.com/swing-research/CryoLithe.git
+```
+
+To test the installation, run:
+```bash
+cryolithe --help
+```
+It should display the main commands: `reconstruct`, `download`, and `download-sample-data`
+
+To uninstall the tool, run:
+```bash
+uv tool uninstall cryolithe
+```
 
 ## Downloading the trained models
 The trained models are stored in Hugging Face and can be downloaded using the `cryolithe download` command. You can specify the local directory where you want to save the models using the `--local-dir` flag. For example, to save the models in a directory called `models`, run:
