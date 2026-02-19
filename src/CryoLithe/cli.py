@@ -95,7 +95,7 @@ def download(
         local_dir=local_dir,
         local_dir_use_symlinks=False,
     )
-    resolved_path = pick_preferred_model_dir(path) or str(Path(path).resolve())
+    resolved_path = str(Path(path).resolve())
 
     if update_user_config:
         user_cfg_path = Path.home() / ".cryolithe.yaml"

@@ -1,7 +1,7 @@
 # End-to-end localized deep learning for Cryo-ET 	
 Official repo for CryoLithe ([paper](https://arxiv.org/abs/2501.15246))
 
-CryoLithe is a supervised machine learning method to directly reconstruct the tomogram from aligned cryo-ET tilt series. The methods is trained on real measurements using FBP+cryo-CARE+IsoNet reconstructions as the reference. The network exploits the imaging geometry to extract small patches from the tilt series to recover the volume. Thus it is practically robust to various data distirbutions. The method provides FBP+cryo-CARE+IsoNet type of reconstructions in a fraction of the time.
+CryoLithe is a supervised machine learning method to directly reconstruct the tomogram from aligned cryo-ET tilt series. The methods is trained on real measurements using FBP+cryo-CARE+IsoNet and FBP+Icecream reconstructions as the reference. The network exploits the imaging geometry to extract small patches from the tilt series to recover the volume. Thus it is practically robust to various data distirbutions. The method provides FBP+cryo-CARE+IsoNet type of reconstructions in a fraction of the time.
 
 
 ## Updates 
@@ -129,7 +129,7 @@ cryolithe reconstruct \
     --save-name output_volume.mrc \
     --device 0 \
     --n3 256 \ # The size of the volume along the z-axis, you can modify this based on your data
-    --batch_size 100000  # Depends on the memory of your GPU
+    --batch-size 100000  # Depends on the memory of your GPU
 ```
 
 You can update other arguments as well based on your data and preferences. For all the parameters and their descriptions, you can run the following command:
@@ -146,7 +146,7 @@ cryolithe reconstruct \
     --save-name output_volume.mrc \
     --device 0 \
     --n3 256 \ # The size of the volume along the z-axis, you can modify this based on your data
-    --batch_size 100000  # Depends on the memory of your GPU
+    --batch-size 100000  # Depends on the memory of your GPU
 ``
 
 If the model directory is not provided, the reconstruct code will choose the wavelet model by default. If you want to use the pixel model, you can use the flag `--pixel` to specify that you want to use the pixel model. For example:
@@ -159,7 +159,7 @@ cryolithe reconstruct \
     --save-name output_volume.mrc \
     --device 0 \
     --n3 256 \ # The size of the volume along the z-axis, you can modify this based on your data
-    --batch_size 100000  # Depends on the memory of your GPU
+    --batch-size 100000  # Depends on the memory of your GPU
 ```
 
 ## Legacy interface (v1)
