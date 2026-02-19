@@ -22,7 +22,6 @@ CryoLithe is a supervised machine learning method to directly reconstruct the to
 
 ## Installation
 You can install CryoLithe using either [**conda**](#using-conda-recommended-if-you-already-use-conda) (recommended if you already use conda) or [**uv**](#using-uv) (lightning fast installer).
-.
 
 ### Using conda (recommended if you already use conda):
 
