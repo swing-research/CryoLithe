@@ -1,4 +1,4 @@
-# End-to-end localized deep learning for Cryo-ET 	
+# CryoLithe: Rapid Cryo-ET Reconstruction via Transform-Localized Deep Learning 	
 Official repo for CryoLithe ([paper](https://arxiv.org/abs/2501.15246))
 
 **Abstract**

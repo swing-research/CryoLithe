@@ -13,6 +13,7 @@ from .config import (
     pick_preferred_model_dir,
 )
 from .reconstruct import run_reconstruction
+from .utils.areTomoToImod import convert_to_imod
 
 app = typer.Typer(
     help="CryoLithe command line interface",
@@ -144,6 +145,18 @@ def download_sample_data(
         local_dir_use_symlinks=False,
     )
     typer.echo(f"Sample data saved in: {file_path}")
+
+
+
+@app.command("AreTomoToImod")
+def AreTomoToImod(
+    aln_path: str = typer.Option(None, "--aln-path", help="Path to trained model directory"),
+    output_path: Optional[str] = typer.Option(None, "--output-path", help="Path to save the xf file. (default: ./)."),
+) -> None:
+    if not(output_path):
+        output_path = "./"
+    convert_to_imod(aln_path, output_path)
+
 
 
 def main() -> None:
