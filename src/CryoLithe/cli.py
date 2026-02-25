@@ -24,23 +24,23 @@ app = typer.Typer(
 
 @app.command("reconstruct")
 def reconstruct(
-    config: Optional[str] = typer.Option(None, "--config", help="Path to the yaml file"),
-    model_dir: Optional[str] = typer.Option(None, "--model-dir", help="Path to trained model directory"),
-    proj_file: Optional[str] = typer.Option(None, "--proj-file", help="Path to projections .mrc/.mrcs file"),
-    angle_file: Optional[str] = typer.Option(None, "--angle-file", help="Path to tilt-angle file"),
-    save_dir: Optional[str] = typer.Option(None, "--save-dir", help="Directory to write reconstruction"),
-    save_name: Optional[str] = typer.Option(None, "--save-name", help="Output volume filename"),
-    device: int = typer.Option(0, "--device", help="CUDA device id"),
+    config: Optional[str] = typer.Option(None, "--config", help="Path to the yaml file."),
+    model_dir: Optional[str] = typer.Option(None, "--model-dir", help="Path to trained model directory."),
+    proj_file: Optional[str] = typer.Option(None, "--proj-file", help="Path to projections .mrc/.mrcs file."),
+    angle_file: Optional[str] = typer.Option(None, "--angle-file", help="Path to tilt-angle file."),
+    save_dir: Optional[str] = typer.Option(None, "--save-dir", help="Directory to write reconstruction."),
+    save_name: Optional[str] = typer.Option(None, "--save-name", help="Output volume filename."),
+    device: int = typer.Option(0, "--device", help="CUDA device id."),
     downsample_projections: bool = typer.Option(
-        False, "--downsample-projections/--no-downsample-projections", help="Downsample projections"
+        False, "--downsample-projections/--no-downsample-projections", help="Whether to downsample the input projections for reconstruction. If true, the projections will be downsampled by the specified factor."
     ),
-    downsample_factor: float = typer.Option(0.25, "--downsample-factor", help="Downsampling factor"),
-    anti_alias: bool = typer.Option(True, "--anti-alias/--no-anti-alias", help="Use antialias while downsampling"),
-    n3: Optional[int] = typer.Option(None, "--n3", help="Volume size along z-axis"),
-    patch_scale: Optional[float] = typer.Option(None, "--patch-scale", help="Override model patch scale"),
-    pixel: bool = typer.Option(False, "--pixel", help="Use cryolithe-pixel when auto-selecting model."),
-    batch_size: int = typer.Option(100000, "--batch-size", help="Batch size for point inference"),
-    num_workers: int = typer.Option(0, "--num-workers", help="DataLoader workers"),
+    patch_scale: Optional[float] = typer.Option(None, "--patch-scale", help="Override model patch scale. The only parameter that will influence the reconstruction quality. Default is 1. Greater than one means that effective field of the patch increases, and lower than one means that it decreases."),
+    downsample_factor: float = typer.Option(0.25, "--downsample-factor", help="Factor by which to downsample the input projections if downsample_projections is true."),
+    anti_alias: bool = typer.Option(True, "--anti-alias/--no-anti-alias", help="Use antialias while downsampling."),
+    n3: Optional[int] = typer.Option(None, "--n3", help="Volume size along z-axis, after downsampling."),
+    pixel: bool = typer.Option(False, "--pixel", help="Use cryolithe-pixel (longer, slighlty better quality) if True, and cryolithe (faster) is False."),
+    batch_size: int = typer.Option(100000, "--batch-size", help="Batch size for point inference."),
+    num_workers: int = typer.Option(0, "--num-workers", help="DataLoader workers."),
 ) -> None:
     """Reconstruct volume using a YAML config or direct CLI options."""
     overrides = {
