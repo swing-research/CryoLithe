@@ -5,20 +5,16 @@ CryoLithe is a supervised machine learning method to directly reconstruct the to
 
 
 ## Updates 
-- 19.02.2025:
-    - Updated interface to be more user friendly and easier to use.
-    - uv installation method added which is a super fast.
-    - trained models are now stored in Hugging Face and can be downloaded using the `cryolithe download` command.
-- 18.04.2025: 
-    - New models that can recover the volume from arbitrary number of tilt series. 
-    - Update the pytorch version to 2.6.0 (the code was tested with 2.6.0)
-    - Update the README file to include the new models and the new requirements.
-    - Multi-GPU infernence is now supported.
-- 05.08.2025
-    - Added support to reconstruct a list of volumes from a single yaml file.
-    - Added a new script `super-list.py` to run the model on a list of projections.
+- XX.XX.2026:
+    - Update readme.  
+- 19.02.2026:
+    - Command line interface + uv installation (super fast) + trained model in Hugging Face.
 - 05.09.2025
-    - Added new trained models that were trained on a larger dataset. 
+    - New model trained on a larger dataset.
+- 05.08.2025
+    - Support list of volumes. 
+- 18.04.2025:  
+    - Arbitrary nummber of tilts + recommended pytorch version to 2.6.0 + Multi-GPU inference
 
 ## Installation
 You can install CryoLithe using either [**conda**](#using-conda-recommended-if-you-already-use-conda) (recommended if you already use conda) or [**uv**](#using-uv) (lightning fast installer).
@@ -28,58 +24,33 @@ You can install CryoLithe using either [**conda**](#using-conda-recommended-if-y
 Create a new conda environment using the command:
 ```bash
 conda create -n CryoLithe python=3.9
-```
-Activate the environment using the command:
-```bash
 conda activate CryoLithe
-```
-Install PyTorch 2.6 (or a compatible version). The code was tested with PyTorch 2.6 and 2.8
-```bash
 pip3 install torch torchvision torchaudio
 ```
+The code was tested with PyTorch 2.6 and 2.8.
 
-###  Install CryoLithe and its dependencies:
-You can install CryoLithe directly from the GitHub repository using pip or clone the repository and install it locally.
-
-
+You can install CryoLithe and its dependencies directly from the GitHub repository using pip or clone the repository and install it locally.
 ####  Direct installation (recommended):
 ```bash
 pip install git+https://github.com:swing-research/CryoLithe.git
 ```
 
-To test the installation, run:
-```bash
-cryolithe --help
-```
-It should display the main commands: `reconstruct`, `download`, and `download-sample-data`
-
-
-#### Local installation from cloned repository (for ones who want to modify the code):
-
+#### Local installation (for ones who want to modify the code):
 Clone the repository using **one** of the following methods:
 
-**HTTPS**
+*HTTPS*
 ```bash
 git clone https://github.com:swing-research/CryoLithe.git
 ```
-**SSH (for users with SSH keys configured):**
+*SSH (for users with SSH keys configured):*
 ```bash
 git clone git@github.com:swing-research/CryoLithe.git
 ```
 
-
 Install in editable mode:
-
 ```bash
 pip install -e .
 ```
-To test the installation, run:
-```bash
-cryolithe --help
-```
-It should display the two main commands: `reconstruct` and `download`
-
-
 
 ### Using uv: 
 If you don't have uv installed, you can use the following command (if using a linux or macOS system), alternatively  you can follow the instructions in the  official [uv documentation](https://docs.astral.sh/uv/#installation):
@@ -93,16 +64,19 @@ Once you have uv installed, there are multiple ways to install CryoLithe using u
 uv tool install git+https://github.com/swing-research/CryoLithe.git
 ```
 
-To test the installation, run:
+To uninstall the tool, run:
+```bash
+uv tool uninstall cryolithe
+```
+
+### Test the installation
+Run: 
 ```bash
 cryolithe --help
 ```
 It should display the main commands: `reconstruct`, `download`, and `download-sample-data`
 
-To uninstall the tool, run:
-```bash
-uv tool uninstall cryolithe
-```
+
 
 ## Downloading the trained models
 The trained models are stored in Hugging Face and can be downloaded using the `cryolithe download` command. You can specify the local directory where you want to save the models using the `--local-dir` flag. For example, to save the models in a directory called `models`, run:
