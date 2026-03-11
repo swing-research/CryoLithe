@@ -2,17 +2,21 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Optional
 
 import typer
+from ml_collections import config_dict as cd
 
 from .config import (
     HF_MODEL_REPO_ID,
     HF_SAMPLE_DATA_REPO_ID,
+    build_training_config,
     build_reconstruction_config,
     pick_preferred_model_dir,
 )
 from .reconstruct import run_reconstruction
+from .train_model_real import train_model_real
 
 app = typer.Typer(
     help="CryoLithe command line interface",
@@ -144,6 +148,30 @@ def download_sample_data(
         local_dir_use_symlinks=False,
     )
     typer.echo(f"Sample data saved in: {file_path}")
+
+
+@app.command("train_model")
+def train_model_command(
+    config: str = typer.Argument(..., help="Path to the training YAML file."),
+    load_checkpoint: bool = typer.Option(
+        False,
+        "--load-checkpoint/--no-load-checkpoint",
+        help="Resume training from output_dir/checkpoint.pth.",
+    ),
+) -> None:
+    """Train CryoLithe using a YAML config merged with train_model.yaml defaults."""
+    training_config = build_training_config(config)
+    output_dir = training_config.get("output_dir")
+    if not output_dir:
+        raise typer.BadParameter("Missing output_dir in training config.")
+
+    train_model_real(
+        configs=cd.ConfigDict(training_config),
+        path=str(Path(output_dir)),
+        load_checkpoint=load_checkpoint,
+        seed=int(training_config.get("seed", 0)),
+        device=training_config.get("device", 0),
+    )
 
 
 def main() -> None:

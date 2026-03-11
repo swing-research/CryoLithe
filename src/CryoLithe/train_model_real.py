@@ -1,315 +1,380 @@
-""" Training script to train the cryolithe models using real data and corresponding reconstruction obtained from 
-self-supervised methods.
-"""
+"""Training script for CryoLithe models using real data and reconstructions."""
 
-
-"""
-This script is used to train the model using the real data and projection pairs 
-"""
+import json
 import os
 import timeit
-import json
+
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
-from torch.autograd import Variable
 from ml_collections import config_dict as cd
-import matplotlib.pyplot as plt
+from torch.autograd import Variable
+from torch.utils.data import DataLoader
 
-from .models import get_model
-
-from .filter_models import get_filter_model
 from .datasets.real_volumes import RealVolumes
-from .trainers import TrainerReal,TrainerRealVolume, TrainerRealWavelet
+from .filter_models import get_filter_model
+from .models import get_model
+from .trainers import TrainerReal, TrainerRealVolume, TrainerRealWavelet
+
+try:
+    import wandb
+except ImportError:
+    wandb = None
 
 
-import wandb
+def _ensure_directory(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        print(f"Folder '{path}' created.")
+    else:
+        print(f"Folder '{path}' already exists.")
 
 
-def train_model_real(configs, path, load_checkpoint = False, seed = 0, device ='cpu'):
+def _prepare_output_paths(path):
+    output_path = path
+    train_path = os.path.join(output_path, "Train")
+    print(output_path)
+    _ensure_directory(output_path)
+    _ensure_directory(train_path)
+    return {
+        "output_path": output_path,
+        "train_path": train_path,
+        "config_path": os.path.join(output_path, "config.json"),
+        "checkpoint_path": os.path.join(output_path, "checkpoint.pth"),
+        "checkpoint_backup_path": os.path.join(output_path, "checkpoint_BP.pth"),
+        "checkpoint_best_path": os.path.join(output_path, "checkpoint_best.pth"),
+        "checkpoint_best_backup_path": os.path.join(output_path, "checkpoint_best_BP.pth"),
+        "loss_plot_path": os.path.join(train_path, "loss"),
+    }
 
 
-    DEVICE = device
+def _resolve_torch_device(device_id):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if torch.cuda.device_count() > 1:
+        torch.cuda.set_device(device_id)
+        device = torch.device("cuda:" + str(device_id))
+    print(device)
+    return device
 
 
+def _load_configs_if_needed(configs, load_checkpoint, config_path):
+    if load_checkpoint:
+        print("Loading configs")
+        configs = cd.ConfigDict(json.load(open(config_path)))
+        print("Epochs:" + str(configs.training.num_epochs))
+    return configs
 
-    run = wandb.init(
-        # Set the wandb entity where your project will be logged (generally your team name).
-        entity="vinith-unibas",
-        # Set the wandb project where this run will be logged.
-        project="cryolithe-icecream",
-        # Track hyperparameters and run metadata.
-        config= configs.to_dict()
+
+def _apply_config_defaults(configs):
+    defaults = (
+        ("ramp_lr", None, "Adding type as ramp_lr"),
+        ("filter_2D_lr", None, "Adding type as ramp_lr"),
+        ("ramp_weight_decay", configs.training.weight_decay, "Adding type as ramp_weight_decay"),
+        ("discrete_sampling", False, "Adding type as discrete_sampling"),
+        ("get_projection_prefiltered", False, "Adding type as get_projection_prefiltered"),
+        ("scale_data", False, "Adding type as get_projection_prefiltered"),
+        ("use_volumetric_trainer", False, "Adding use_volumetric_trainer as False"),
+        ("use_wavelet_trainer", False, "Adding use_wavelet_trainer as False"),
+        ("reduction", "mean", "Adding reduction as mean"),
+        ("use_wandb", False, "Adding use_wandb as False"),
+        ("wandb_project", "cryolithe", "Adding wandb_project as cryolithe"),
+        ("wandb_entity", None, "Adding wandb_entity as None"),
     )
 
-    PATH = path
-    LOAD_CHECKPOINT = load_checkpoint
-    print(PATH)
-    #LOAD_CHECKPOINT = False
-    if not os.path.exists(PATH):
-        os.makedirs(PATH)
-        print(f"Folder '{PATH}' created.")
-    else:
-        print(f"Folder '{PATH}' already exists.")
+    for attribute, value, message in defaults:
+        if hasattr(configs.training, attribute) is False:
+            print(message)
+            setattr(configs.training, attribute, value)
 
-
-    if not os.path.exists(PATH+ 'Train/'):
-        os.makedirs(PATH+ 'Train/')
-        print(f"Folder '{PATH+ 'Train/'}' created.")
-    else:
-        print(f"Folder '{PATH+ 'Train/'}' already exists.")
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    if torch.cuda.device_count()>1:
-        torch.cuda.set_device(DEVICE)
-        device = torch.device("cuda:"+str(DEVICE))
-    print(device)
-    # Load the configs from the folder if loading from check point
-    if LOAD_CHECKPOINT:
-        print("Loading configs")
-        configs = cd.ConfigDict(json.load(open(PATH + 'config.json')))
-        print("Epochs:"+str(configs.training.num_epochs))
-    # loading the data
-    if hasattr(configs.training,'ramp_lr') is False:
-        print('Adding type as ramp_lr')
-        configs.training.ramp_lr = None
-    if hasattr(configs.training,'filter_2D_lr') is False:
-        print('Adding type as ramp_lr')
-        configs.training.filter_2D_lr = None
-
-
-    if hasattr(configs.training,'ramp_weight_decay') is False:
-        print('Adding type as ramp_weight_decay')
-        configs.training.ramp_weight_decay = configs.training.weight_decay
-
-        
-    if hasattr(configs.training,'discrete_sampling') is False:
-        print('Adding type as discrete_sampling')
-        configs.training.discrete_sampling = False
-    if hasattr(configs.training,'get_projection_prefiltered') is False:
-        print('Adding type as get_projection_prefiltered')
-        configs.training.get_projection_prefiltered = False
-    if hasattr(configs.training,'scale_data') is False:
-        print('Adding type as get_projection_prefiltered')
-        configs.training.scale_data = False
-    if hasattr(configs, 'deform_volume') is False:
-        print('Adding deform_volume as False')
+    if hasattr(configs, "deform_volume") is False:
+        print("Adding deform_volume as False")
         configs.deform_volume = False
-    if hasattr(configs.training, 'use_volumetric_trainer') is False:
-        print('Adding use_volumetric_trainer as False')
-        configs.training.use_volumetric_trainer = False
-    if hasattr(configs.training, 'use_wavelet_trainer') is False:
-        print('Adding use_wavelet_trainer as False')
-        configs.training.use_wavelet_trainer = False
-    if hasattr(configs.training , 'reduction') is False:
-        print('Adding reduction as mean')
-        configs.training.reduction = 'mean'
+
+    if hasattr(configs.model, "type") is False:
+        print("Adding attribute type as mlp")
+        configs.model.type = "mlp"
+
+    return configs
 
 
-    # Model parameters
-    if hasattr(configs.model,'type') is False:
-        print('Adding attribute type as mlp')
-        configs.model.type = 'mlp'
-    N_PROJECTIONS = configs.data.n_projections
-    model_input_projections = N_PROJECTIONS
+def _init_wandb(configs):
+    use_wandb = configs.training.use_wandb
+    if use_wandb and wandb is None:
+        print("wandb requested but not installed. Continuing with wandb disabled.")
+        use_wandb = False
+
+    if use_wandb is False:
+        return None
+
+    entity = getattr(configs.training, "wandb_entity", None)
+    project = getattr(configs.training, "wandb_project", "cryolithe")
+
+    return wandb.init(
+        entity=entity,
+        project=project,
+        config=configs.to_dict(),
+    )
+
+
+def _build_datasets(configs):
+    if configs.data.type == "t20":
+        train_dataset = RealVolumes(**configs.train_dataset)
+        valid_dataset = RealVolumes(**configs.valid_dataset)
+        return train_dataset, valid_dataset
+
+    raise NotImplementedError(f"Dataset type {configs.data.type} not implemented")
+
+
+def _build_model_components(configs, model_device, runtime_device):
+    n_projections = configs.data.n_projections
+    model_input_projections = n_projections
     if configs.training.get_projection_prefiltered:
-        model_input_projections = 2*N_PROJECTIONS
+        model_input_projections = 2 * n_projections
 
-    print("using model:"+configs.model.type )
-    model = get_model(n_projections = model_input_projections, **configs.model).to(DEVICE)
+    print("using model:" + configs.model.type)
+    model = get_model(n_projections=model_input_projections, **configs.model).to(model_device)
     num_param = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"---> Number of trainable parameters in volume net: {num_param}")
 
+    train_list = [{"params": model.parameters()}]
 
-        
-    if configs.data.type == 't20':
-        train_dataset = RealVolumes(**configs.train_dataset)
-        valid_dataset = RealVolumes(**configs.valid_dataset)
+    ramp = _build_ramp(configs, train_list, model_device, runtime_device)
+    filter_2d = _build_filter_2d(configs, train_list, model_device)
+    patch_scale = _build_patch_scale(configs, train_list, model_device)
 
-    # TODO: there is an inconsisitency in loading data if preload is true look at training loop
-    # if configs.deform_volume:
-    #     # vol_deformer = VolumeDeformer(**configs.volume_deformer)
-    # else:
-    vol_deformer = None
-    #projection_simulator = ProjectionSimulator(**configs.data)
+    return model, ramp, filter_2d, patch_scale, train_list
 
 
-    # generate validation data
-    valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=4)
+def _build_ramp(configs, train_list, model_device, runtime_device):
+    if configs.filter_projections is False:
+        return None
 
-
-    # valid_data = next(iter(valid_vol_loader))
-    # print('Generating Validation Data')
-    # valid_data = projection_simulator.simulate_batch(valid_data, 
-    #                                                 vol_deformer= vol_deformer,
-    #                                                 downsample = configs.training.downsample,
-    #                                                 downsample_factors = configs.training.downsample_factor,
-    #                                                 scale_data= configs.training.scale_data,
-    #                                                 device= DEVICE)
-    # valid_loader = DataLoader(valid_data, batch_size=configs.training.batch_size, shuffle=False)
-
-
-
-    train_list = []
-    train_list.append({'params':model.parameters()})
-    # TODO : May be using a learnable polynomial ramp to account for different resolutions
-    if configs.filter_projections:
-        if configs.ramp.use_pretrained:
-            checkpoint = torch.load(configs.ramp.pretrain_path + '/checkpoint.pth',map_location=torch.device(device))
-            ramp = checkpoint['ramp']
-        else:
-            ramp  = get_filter_model(configs.ramp.type,**configs.ramp.model).to(DEVICE)
-            if configs.ramp.use_learnable_ramp:
-                if configs.training.ramp_lr is None:
-                    train_list.append({'params':ramp.parameters(),'weight_decay':configs.training.ramp_weight_decay })
-                else:
-                    train_list.append({'params':ramp.parameters(), 'lr': configs.training.ramp_lr, 'weight_decay':configs.training.ramp_weight_decay})
-    else:
-        ramp = None
-
-
-    if configs.use_2D_filters:
-        filter_2D =  get_filter_model(configs.filter_2D.type,**configs.filter_2D.model).to(DEVICE)
-        if configs.training.filter_2D_lr is None:
-            train_list.append({'params':filter_2D.parameters()})
-        else:
-            train_list.append({'params':filter_2D.parameters(), 'lr': configs.training.filter_2D_lr})
-    else: 
-        filter_2D = None
-
-
-    patch_scale = torch.FloatTensor([configs.training.patch_scale_init]).to(DEVICE).clone()
-    if configs.training.learn_patch_scale:
-        patch_scale = Variable(patch_scale,requires_grad=True)
-        train_list.append({'params':patch_scale})
-
-    # Training parameters
-
-    if configs.training.optimizer == 'adam':
-        optimizer = torch.optim.Adam(train_list, lr=configs.training.lr,
-                                    weight_decay=configs.training.weight_decay)
-    elif configs.training.optimizer == 'sgd':
-        optimizer = torch.optim.SGD(train_list, lr=configs.training.lr,
-                                    weight_decay=configs.training.weight_decay)
-    elif configs.training.optimizer == 'adamw':
-        optimizer = torch.optim.AdamW(train_list, lr=configs.training.lr,
-                                    weight_decay=configs.training.weight_decay)
-        
-
-    if hasattr(configs.training, 'lr_scheduler_type') and configs.training.lr_scheduler_type == 'linear_warmup_cosine_annealing':
-        scheduler = LinearWarmupCosineAnnealingLR(optimizer,
-                                                  warmup_epochs=configs.training.lr_warmup_epochs,
-                                                  max_epochs=configs.training.num_epochs,
-                                                  eta_min=configs.training.lr_min)
-    else:
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
-                                                        milestones=configs.training.lr_decay_epochs,
-                                                        gamma=configs.training.lr_decay)
-    if configs.training.loss == 'MSE':
-        criteria = torch.nn.MSELoss(reduction = configs.training.reduction)
-    elif configs.training.loss == 'l1':
-        criteria = torch.nn.L1Loss(reduction = configs.training.reduction)
-    elif configs.training.loss == 'huber':
-        criteria = torch.nn.SmoothL1Loss(reduction = configs.training.reduction)
-    else:
-        raise NotImplementedError(f"Loss {configs.training.loss} not implemented")
-    REPEATS = configs.training.repeat
-    EPOCHS = configs.training.num_epochs
-    NORM_ORD = configs.training.patch_ord
-    start = 0
-
-    wandb.watch(model, criterion=criteria, log="all", log_freq=10)
-
-    # Check what trainer class to use
-    if configs.training.use_volumetric_trainer:
-        trainer = TrainerRealVolume(config = configs, 
-                    model = model, 
-                    ramp = ramp,
-                    patch_scale = patch_scale,
-                    filter_2D = filter_2D,
-                    optimizer = optimizer, 
-                    criterion = criteria, 
-                    scheduler = scheduler, 
-                    device = DEVICE,
-                    )
-    elif configs.training.use_wavelet_trainer:
-        trainer = TrainerRealWavelet(config = configs, 
-                    model = model, 
-                    ramp = ramp,
-                    patch_scale = patch_scale,
-                    filter_2D = filter_2D,
-                    optimizer = optimizer, 
-                    criterion = criteria, 
-                    scheduler = scheduler, 
-                    device = DEVICE,
+    if configs.ramp.use_pretrained:
+        checkpoint = torch.load(
+            configs.ramp.pretrain_path + "/checkpoint.pth",
+            map_location=torch.device(runtime_device),
         )
-    else:
-        trainer = TrainerReal(config = configs, 
-                        model = model, 
-                        ramp = ramp,
-                        patch_scale = patch_scale,
-                        filter_2D = filter_2D,
-                        optimizer = optimizer, 
-                        criterion = criteria, 
-                        scheduler = scheduler, 
-                        device = DEVICE,
-                        )
+        return checkpoint["ramp"]
+
+    ramp = get_filter_model(configs.ramp.type, **configs.ramp.model).to(model_device)
+    if configs.ramp.use_learnable_ramp:
+        ramp_group = {
+            "params": ramp.parameters(),
+            "weight_decay": configs.training.ramp_weight_decay,
+        }
+        if configs.training.ramp_lr is not None:
+            ramp_group["lr"] = configs.training.ramp_lr
+        train_list.append(ramp_group)
+    return ramp
 
 
-    # Load checkpoint
-    if LOAD_CHECKPOINT:
-        start = trainer.load_checkpoint(PATH+'checkpoint.pth')
-        valid_loss = trainer.valid_loss
-        valid_loss_epoch = trainer.valid_loss[-1]
-        #start = checkpoint['epoch']+1
+def _build_filter_2d(configs, train_list, model_device):
+    if configs.use_2D_filters is False:
+        return None
+
+    filter_2d = get_filter_model(configs.filter_2D.type, **configs.filter_2D.model).to(model_device)
+    filter_group = {"params": filter_2d.parameters()}
+    if configs.training.filter_2D_lr is not None:
+        filter_group["lr"] = configs.training.filter_2D_lr
+    train_list.append(filter_group)
+    return filter_2d
 
 
-    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True,
-                                pin_memory=True, num_workers=4)
-    print('Starting training')
-    for epc in range(start,EPOCHS):
-        start_epoch = timeit.default_timer()
-        trainer.train_step(train_loader, device = DEVICE, wandb_run = run)
+def _build_patch_scale(configs, train_list, model_device):
+    patch_scale = torch.FloatTensor([configs.training.patch_scale_init]).to(model_device).clone()
+    if configs.training.learn_patch_scale:
+        patch_scale = Variable(patch_scale, requires_grad=True)
+        train_list.append({"params": patch_scale})
+    return patch_scale
+
+
+def _build_optimizer(configs, train_list):
+    if configs.training.optimizer == "adam":
+        return torch.optim.Adam(
+            train_list,
+            lr=configs.training.lr,
+            weight_decay=configs.training.weight_decay,
+        )
+    if configs.training.optimizer == "sgd":
+        return torch.optim.SGD(
+            train_list,
+            lr=configs.training.lr,
+            weight_decay=configs.training.weight_decay,
+        )
+    if configs.training.optimizer == "adamw":
+        return torch.optim.AdamW(
+            train_list,
+            lr=configs.training.lr,
+            weight_decay=configs.training.weight_decay,
+        )
+    raise NotImplementedError(f"Optimizer {configs.training.optimizer} not implemented")
+
+
+def _build_scheduler(configs, optimizer):
+    if (
+        hasattr(configs.training, "lr_scheduler_type")
+        and configs.training.lr_scheduler_type == "linear_warmup_cosine_annealing"
+    ):
+        scheduler_cls = globals().get("LinearWarmupCosineAnnealingLR")
+        if scheduler_cls is None:
+            raise ImportError(
+                "LinearWarmupCosineAnnealingLR is not available. Add the required import "
+                "or disable linear_warmup_cosine_annealing in the training config."
+            )
+        return scheduler_cls(
+            optimizer,
+            warmup_epochs=configs.training.lr_warmup_epochs,
+            max_epochs=configs.training.num_epochs,
+            eta_min=configs.training.lr_min,
+        )
+
+    return torch.optim.lr_scheduler.MultiStepLR(
+        optimizer,
+        milestones=configs.training.lr_decay_epochs,
+        gamma=configs.training.lr_decay,
+    )
+
+
+def _build_criterion(configs):
+    if configs.training.loss == "MSE":
+        return torch.nn.MSELoss(reduction=configs.training.reduction)
+    if configs.training.loss == "l1":
+        return torch.nn.L1Loss(reduction=configs.training.reduction)
+    if configs.training.loss == "huber":
+        return torch.nn.SmoothL1Loss(reduction=configs.training.reduction)
+    raise NotImplementedError(f"Loss {configs.training.loss} not implemented")
+
+
+def _build_trainer(configs, model, ramp, patch_scale, filter_2d, optimizer, criterion, scheduler, device_id):
+    trainer_kwargs = {
+        "config": configs,
+        "model": model,
+        "ramp": ramp,
+        "patch_scale": patch_scale,
+        "filter_2D": filter_2d,
+        "optimizer": optimizer,
+        "criterion": criterion,
+        "scheduler": scheduler,
+        "device": device_id,
+    }
+
+    if configs.training.use_volumetric_trainer:
+        return TrainerRealVolume(**trainer_kwargs)
+    if configs.training.use_wavelet_trainer:
+        return TrainerRealWavelet(**trainer_kwargs)
+    return TrainerReal(**trainer_kwargs)
+
+
+def _watch_model(run, model, criterion):
+    if run is not None:
+        wandb.watch(model, criterion=criterion, log="all", log_freq=10)
+
+
+def _load_trainer_checkpoint(trainer, load_checkpoint, checkpoint_path):
+    if load_checkpoint:
+        start_epoch = trainer.load_checkpoint(checkpoint_path)
+        return start_epoch, trainer.valid_loss
+    return 0, []
+
+
+def _save_training_outputs(trainer, configs, paths, epoch, train_loss, run):
+    trainer.save_checkpoint(epoch, paths["checkpoint_path"])
+    trainer.save_checkpoint(epoch, paths["checkpoint_backup_path"])
+
+    valid_loss_epoch = trainer.valid_loss[-1]
+    if valid_loss_epoch == min(trainer.valid_loss):
+        trainer.save_checkpoint(epoch, paths["checkpoint_best_path"])
+        trainer.save_checkpoint(epoch, paths["checkpoint_best_backup_path"])
+
+    plt.figure(1)
+    plt.clf()
+    plt.semilogy(train_loss)
+    plt.savefig(paths["loss_plot_path"])
+
+    with open(paths["config_path"], "w") as handle:
+        json.dump(configs.to_dict(), handle, indent=2)
+
+    print("Config file saved")
+
+    if run is not None:
+        artifact = wandb.Artifact("model", type="model")
+        artifact.add_file(paths["checkpoint_path"])
+        run.log_artifact(artifact)
+
+
+def _run_training_loop(trainer, train_loader, valid_loader, configs, paths, start_epoch, run, device_id):
+    print("Starting training")
+    valid_loss = trainer.valid_loss if trainer.valid_loss else [float("nan")]
+
+    for epoch in range(start_epoch, configs.training.num_epochs):
+        start_time = timeit.default_timer()
+        trainer.train_step(train_loader, device=device_id, wandb_run=run)
         train_loss = trainer.train_loss
         train_loss_epoch = train_loss[-1]
-        stop = timeit.default_timer()
+        stop_time = timeit.default_timer()
 
-
-        if (epc%configs.training.save_every == 0):
-            trainer.validate(valid_loader, device=DEVICE, wandb_run = run)
-            
+        if epoch % configs.training.save_every == 0:
+            trainer.validate(valid_loader, device=device_id, wandb_run=run)
             valid_loss = trainer.valid_loss
-            valid_loss_epoch = trainer.valid_loss[-1]
-            
-            plt.figure(1)
-            plt.clf()
-            plt.semilogy(train_loss)
-            plt.savefig(os.path.join(PATH,'Train/loss'))
+            _save_training_outputs(trainer, configs, paths, epoch, train_loss, run)
+
+        print(
+            "Epoch: {} || Training loss: {:0.4} || Evaluation loss: {:0.4} || Elapsed time: {}".format(
+                str(epoch).zfill(6),
+                np.mean(train_loss_epoch),
+                valid_loss[-1],
+                str(np.round(stop_time - start_time, 2)).zfill(6),
+            )
+        )
 
 
-            # saving 
+def train_model_real(configs, path, load_checkpoint=False, seed=0, device="cpu"):
+    del seed
 
-            trainer.save_checkpoint(epc, PATH+'checkpoint.pth')
-            # Backup checkpoint if the first one fails
-            trainer.save_checkpoint(epc, PATH+'checkpoint_BP.pth')
-            # save the best model
-            if valid_loss_epoch == min(trainer.valid_loss):
-                trainer.save_checkpoint(epc, PATH+'checkpoint_best.pth')
-                # Backup checkpoint if the first one fails
-                trainer.save_checkpoint(epc, PATH+'checkpoint_best_BP.pth')
+    device_id = device
+    paths = _prepare_output_paths(path)
+    runtime_device = _resolve_torch_device(device_id)
+    configs = _load_configs_if_needed(configs, load_checkpoint, paths["config_path"])
+    configs = _apply_config_defaults(configs)
+    run = _init_wandb(configs)
 
-            # Save config file as json
-            with open(PATH+'config.json', 'w') as f:
-                config_dict = configs.to_dict()
-                json.dump(config_dict, f, indent=2)
+    train_dataset, valid_dataset = _build_datasets(configs)
+    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, pin_memory=True, num_workers=4)
+    valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=4)
 
-            print('Config file saved')
+    model, ramp, filter_2d, patch_scale, train_list = _build_model_components(
+        configs,
+        device_id,
+        runtime_device,
+    )
+    optimizer = _build_optimizer(configs, train_list)
+    scheduler = _build_scheduler(configs, optimizer)
+    criterion = _build_criterion(configs)
+    _watch_model(run, model, criterion)
 
-            artifact = wandb.Artifact('model', type='model')
-            artifact.add_file(PATH+'checkpoint.pth')
-            run.log_artifact(artifact)
+    trainer = _build_trainer(
+        configs,
+        model,
+        ramp,
+        patch_scale,
+        filter_2d,
+        optimizer,
+        criterion,
+        scheduler,
+        device_id,
+    )
+    start_epoch, _ = _load_trainer_checkpoint(trainer, load_checkpoint, paths["checkpoint_path"])
 
+    _run_training_loop(
+        trainer,
+        train_loader,
+        valid_loader,
+        configs,
+        paths,
+        start_epoch,
+        run,
+        device_id,
+    )
 
-        print('Epoch: {} || Training loss: {:0.4} || Evaluation loss: {:0.4} || Elapsed time: {}'.format(str(epc).zfill(6), np.mean(train_loss_epoch), valid_loss[-1], str(np.round(stop - start_epoch,2)).zfill(6)))
-
-    run.finish()
+    if run is not None:
+        run.finish()
