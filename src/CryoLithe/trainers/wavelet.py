@@ -7,6 +7,12 @@ from ..utils.wavelet_utils import wavelet_multilevel_decomposition
 
 class TrainerRealWavelet(TrainerReal):
     """The trainer for the real data  where the model outputs a wavelet coefficient instead of a single point, the loss is computed on a subvolume"""
+    @staticmethod
+    def _halve_nlims(nlims):
+        if nlims is None:
+            return None
+        return [[int(lower) // 2, int(upper) // 2] for lower, upper in nlims]
+
     def train_step(self,data_loader, device = 'cpu', wandb_run = None):
         """
         Train the model for one epoch
@@ -135,6 +141,8 @@ class TrainerRealWavelet(TrainerReal):
             zlim_values = zlims
         else:
             zlim_values = self.config.training.nlims
+
+        zlim_values = self._halve_nlims(zlim_values)
 
 
         # If volume size is smaller than zlim values, then adjust the zlim values

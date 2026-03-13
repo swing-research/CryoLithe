@@ -133,9 +133,9 @@ training:
   downsample_proj_vol: false
   downsample_proj_vol_factor: 0.5
   nlims:
-    - [50, 450] #  x-lims
-    - [40, 450] #  y-lims
-    - [100, 150] #  z-lims
+    - [100, 900] #  x-lims
+    - [80, 900] #  y-lims
+    - [200, 300] #  z-lims
   dynamic_zlims: false
   use_half_precision: false
   use_amp: true
