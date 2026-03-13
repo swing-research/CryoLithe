@@ -1,0 +1,56 @@
+seed: 42
+output_dir: ./training-run/sample
+device: 0
+
+dataset:
+  root_dir: ./data/
+  normalize_type: standard
+  randomize_projections: true
+  full_randomize: true
+  remove_projections_wedge: false
+  max_remove_projections_wedge: 30
+  remove_projections_random: true
+  max_remove_projections_random: 8
+
+  vol_paths: 
+    - tomo1/2833_corrected.mrc
+    - tomo2/2877_corrected.mrc
+    - tomo3/2932_corrected.mrc
+    - tomo4/2935_corrected.mrc
+  projection_paths:
+    - tomo1/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_10_dose-filt_ali.mrc
+    - tomo2/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_14_dose-filt_ali.mrc
+    - tomo3/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_45_dose-filt_ali.mrc
+    - tomo4/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_48_dose-filt_ali.mrc
+  projection_paths_odd: 
+    - tomo1/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_10_ODD_ali.mrc
+    - tomo2/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_14_ODD_ali.mrc
+    - tomo3/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_45_ODD_ali.mrc
+    - tomo4/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_48_ODD_ali.mrc
+
+  projection_paths_even:
+   - tomo1/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_10_EVN_ali.mrc
+   - tomo2/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_14_EVN_ali.mrc
+   - tomo3/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_45_EVN_ali.mrc
+   - tomo4/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_48_EVN_ali.mrc
+  angle_paths:
+   - tomo1/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_10_dose-filt.tlt
+   - tomo2/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_14_dose-filt.tlt
+   - tomo3/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_45_dose-filt.tlt
+   - tomo4/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_48_dose-filt.tlt
+  z_lims_list: []
+
+
+
+training:
+  num_epochs: 10000
+  num_points: 1000
+
+splits:
+  mode: ratio
+
+  train: 0.5
+  valid: 0.25
+  test: 0.25
+
+
