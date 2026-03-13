@@ -15,6 +15,7 @@ from .datasets.real_volumes import RealVolumes
 from .filter_models import get_filter_model
 from .models import get_model
 from .trainers import TrainerReal, TrainerRealVolume, TrainerRealWavelet
+from .schedulers import LinearWarmupCosineAnnealingLR
 
 try:
     import wandb
@@ -68,7 +69,7 @@ def _load_configs_if_needed(configs, load_checkpoint, config_path):
 def _apply_config_defaults(configs):
     defaults = (
         ("ramp_lr", None, "Adding type as ramp_lr"),
-        ("filter_2D_lr", None, "Adding type as ramp_lr"),
+        ("filter_2D_lr", None, "Adding type as filter_2D_lr"),
         ("ramp_weight_decay", configs.training.weight_decay, "Adding type as ramp_weight_decay"),
         ("discrete_sampling", False, "Adding type as discrete_sampling"),
         ("get_projection_prefiltered", False, "Adding type as get_projection_prefiltered"),
@@ -215,13 +216,7 @@ def _build_scheduler(configs, optimizer):
         hasattr(configs.training, "lr_scheduler_type")
         and configs.training.lr_scheduler_type == "linear_warmup_cosine_annealing"
     ):
-        scheduler_cls = globals().get("LinearWarmupCosineAnnealingLR")
-        if scheduler_cls is None:
-            raise ImportError(
-                "LinearWarmupCosineAnnealingLR is not available. Add the required import "
-                "or disable linear_warmup_cosine_annealing in the training config."
-            )
-        return scheduler_cls(
+        return LinearWarmupCosineAnnealingLR(
             optimizer,
             warmup_epochs=configs.training.lr_warmup_epochs,
             max_epochs=configs.training.num_epochs,

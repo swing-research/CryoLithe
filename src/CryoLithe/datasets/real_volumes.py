@@ -1,7 +1,7 @@
 """
 Dataset class for loading the real volumes along wth the coresponding projections and their angles
 """
-
+import os
 import numpy as np
 import torch
 import mrcfile
@@ -60,22 +60,23 @@ class RealVolumes(Dataset):
 
         if self.cache:
             print("Preloading volumes")
+            print(self.root_dir)
             self.data_list= []
             for i, (vol_path, proj_path, angle_path) in enumerate(zip(self.vol_paths, self.projection_paths, self.angle_paths)):
                 print(f"Loading {vol_path}")
 
-                vol = mrcfile.open(self.root_dir + vol_path, mode='r').data
+                vol = mrcfile.open(os.path.join(self.root_dir, vol_path), mode='r').data
                 vol = vol.astype(np.float32)
                 vol = self.data_normalize(vol)
                 vol = np.moveaxis(vol, 0, 2).copy()
 
                 #print(f"Loading {proj_path}")
-                proj = mrcfile.open(self.root_dir + proj_path, mode='r').data
+                proj = mrcfile.open(os.path.join(self.root_dir, proj_path), mode='r').data
                 proj = proj.astype(np.float32)
                 proj = self.data_normalize(proj)
 
                 #print(f"Loading {angle_path}")
-                angles = np.loadtxt(self.root_dir + angle_path)*np.pi/180
+                angles = np.loadtxt(os.path.join(self.root_dir, angle_path))*np.pi/180
                 angles = angles.astype(np.float32)
 
 
@@ -85,7 +86,7 @@ class RealVolumes(Dataset):
                     if projection_paths_odd[i] is None:
                         proj_odd = None
                     else:
-                        proj_odd = mrcfile.open(self.root_dir + projection_paths_odd[i], mode='r').data
+                        proj_odd = mrcfile.open(os.path.join(self.root_dir, projection_paths_odd[i]), mode='r').data
                         proj_odd = proj_odd.astype(np.float32)
                         proj_odd = self.data_normalize(proj_odd)
 
@@ -93,7 +94,7 @@ class RealVolumes(Dataset):
                     if projection_paths_even[i] is None:
                         proj_even = None
                     else:
-                        proj_even = mrcfile.open(self.root_dir + projection_paths_even[i], mode='r').data
+                        proj_even = mrcfile.open(os.path.join(self.root_dir, projection_paths_even[i]), mode='r').data
                         proj_even = proj_even.astype(np.float32)
                         proj_even = self.data_normalize(proj_even)
 
