@@ -150,7 +150,7 @@ def download_sample_data(
     typer.echo(f"Sample data saved in: {file_path}")
 
 
-@app.command("train_model")
+@app.command("train-model")
 def train_model_command(
     config: str = typer.Argument(..., help="Path to the training YAML file."),
     load_checkpoint: bool = typer.Option(
@@ -158,18 +158,15 @@ def train_model_command(
         "--load-checkpoint/--no-load-checkpoint",
         help="Resume training from output_dir/checkpoint.pth.",
     ),
+    device: Optional[int] = typer.Option(None, "--device", help="CUDA device id. Overrides config file.")
 ) -> None:
     """Train CryoLithe using a YAML config merged with train_model.yaml defaults."""
     training_config = build_training_config(config)
-    output_dir = training_config.get("output_dir")
-    if not output_dir:
-        raise typer.BadParameter("Missing output_dir in training config.")
-
+    if device is not None:
+        training_config["device"] = device
     train_model_real(
         configs=cd.ConfigDict(training_config),
-        path=str(Path(output_dir)),
         load_checkpoint=load_checkpoint,
-        seed=int(training_config.get("seed", 0)),
         device=training_config.get("device", 0),
     )
 

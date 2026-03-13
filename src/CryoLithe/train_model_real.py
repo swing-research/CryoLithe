@@ -328,8 +328,18 @@ def _run_training_loop(trainer, train_loader, valid_loader, configs, paths, star
         )
 
 
-def train_model_real(configs, path, load_checkpoint=False, seed=0, device="cpu"):
-    del seed
+def train_model_real(configs, load_checkpoint=False, device="cpu"):
+    seed = configs.seed if hasattr(configs, "seed") else 42
+
+
+    # Set random seeds for reproducibility
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+
+
+    path = configs.get("output_dir")
+
+    assert path is not None, "output_dir must be specified in the training config"
 
     device_id = device
     paths = _prepare_output_paths(path)
