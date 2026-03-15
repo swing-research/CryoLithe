@@ -9,6 +9,13 @@ HF_MODEL_REPO_ID = "Vinith2/CryoLithe"
 HF_SAMPLE_DATA_REPO_ID = "Vinith2/CryoLithe-sample-tiltseries"
 PREFERRED_MODEL_DIRS = ("cryolithe", "cryolithe-pixel")
 
+TRAINING_DATA_PATH = "sada-group/CryoLithe-training-dataset"
+SMALL_SUBSET_TOMOS = [
+    "empiar-11830/tomo_001/*",
+    "empiar-11830/tomo_002/*",
+    "empiar-11830/tomo_004/*",
+    "empiar-11830/tomo_005/*",
+]
 
 def _resolve_path_value(value: Any, base_dir: Path) -> Any:
     if isinstance(value, str):

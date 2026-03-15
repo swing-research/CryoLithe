@@ -11,6 +11,8 @@ from ml_collections import config_dict as cd
 from .config import (
     HF_MODEL_REPO_ID,
     HF_SAMPLE_DATA_REPO_ID,
+    TRAINING_DATA_PATH,
+    SMALL_SUBSET_TOMOS,
     build_training_config,
     build_reconstruction_config,
     pick_preferred_model_dir,
@@ -170,6 +172,38 @@ def train_model_command(
         device=training_config.get("device", 0),
     )
 
+@app.command("download-training-data")
+def download_training_data(
+    local_dir: Optional[str] = typer.Option(
+        None,
+        "--local-dir",
+        help="Directory to download training data. Defaults to ./cryolithe-training-data in the current working directory.",
+    ),
+    small_subset: bool = typer.Option(
+        False,
+        "--small-subset/--full-dataset",
+        help="Whether to download a small subset of the training data for quick testing (default: False). If enabled, only the first 10 tomograms will be downloaded.",
+    ),
+) -> None:
+    """Download training tilt-series data from Hugging Face dataset repo."""
+    from huggingface_hub import snapshot_download
+    from pathlib import Path
+
+    target_dir = Path(local_dir) if local_dir is not None else (Path.cwd() / "cryolithe-training-data")
+    if not target_dir.is_absolute():
+        target_dir = (Path.cwd() / target_dir).resolve()
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    allow_patterns = SMALL_SUBSET_TOMOS if small_subset else None
+
+    file_path = snapshot_download(
+        repo_id=HF_SAMPLE_DATA_REPO_ID,
+        local_dir=str(target_dir),
+        repo_type="dataset",
+        local_dir_use_symlinks=False,
+        allow_patterns=allow_patterns,
+    )
+    typer.echo(f"Sample data saved in: {file_path}")
 
 def main() -> None:
     app()
