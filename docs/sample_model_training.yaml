@@ -3,7 +3,7 @@ output_dir: ./training-run/sample
 device: 0
 
 dataset:
-  root_dir: ./data/
+  root_dir: ./cryolithe-training-data/
   normalize_type: standard
   randomize_projections: true
   full_randomize: true
@@ -13,31 +13,31 @@ dataset:
   max_remove_projections_random: 8
 
   vol_paths: 
-    - tomo1/2833_corrected.mrc
-    - tomo2/2877_corrected.mrc
-    - tomo3/2932_corrected.mrc
-    - tomo4/2935_corrected.mrc
+    - empiar-11830/tomo_001/vol_CTF_EVN_fbp_vol_CTF_ODD_fbp_icecream.mrc
+    - empiar-11830/tomo_002/vol_CTF_EVN_fbp_vol_CTF_ODD_fbp_icecream.mrc
+    - empiar-11830/tomo_004/vol_CTF_EVN_fbp_vol_CTF_ODD_fbp_icecream.mrc
+    - empiar-11830/tomo_005/vol_CTF_EVN_fbp_vol_CTF_ODD_fbp_icecream.mrc
   projection_paths:
-    - tomo1/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_10_dose-filt_ali.mrc
-    - tomo2/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_14_dose-filt_ali.mrc
-    - tomo3/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_45_dose-filt_ali.mrc
-    - tomo4/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_48_dose-filt_ali.mrc
+    - empiar-11830/tomo_001/proj_CTF.mrc
+    - empiar-11830/tomo_002/proj_CTF.mrc
+    - empiar-11830/tomo_004/proj_CTF.mrc
+    - empiar-11830/tomo_005/proj_CTF.mrc
   projection_paths_odd: 
-    - tomo1/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_10_ODD_ali.mrc
-    - tomo2/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_14_ODD_ali.mrc
-    - tomo3/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_45_ODD_ali.mrc
-    - tomo4/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_48_ODD_ali.mrc
+    - empiar-11830/tomo_001/proj_ODD_CTF.mrc
+    - empiar-11830/tomo_002/proj_ODD_CTF.mrc
+    - empiar-11830/tomo_004/proj_ODD_CTF.mrc
+    - empiar-11830/tomo_005/proj_ODD_CTF.mrc
 
   projection_paths_even:
-   - tomo1/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_10_EVN_ali.mrc
-   - tomo2/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_14_EVN_ali.mrc
-   - tomo3/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_45_EVN_ali.mrc
-   - tomo4/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_48_EVN_ali.mrc
+   - empiar-11830/tomo_001/proj_EVN_CTF.mrc
+   - empiar-11830/tomo_002/proj_EVN_CTF.mrc
+   - empiar-11830/tomo_004/proj_EVN_CTF.mrc
+   - empiar-11830/tomo_005/proj_EVN_CTF.mrc
   angle_paths:
-   - tomo1/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_10_dose-filt.tlt
-   - tomo2/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_14_dose-filt.tlt
-   - tomo3/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_45_dose-filt.tlt
-   - tomo4/20230904_chlamy_BrnoKrios_Xe_WebUI_pretilt10_step2_Position_48_dose-filt.tlt
+   - empiar-11830/tomo_001/06022023_BrnoKrios_Arctis_xe_Position_70.rawtlt
+   - empiar-11830/tomo_002/06042022_BrnoKrios_Arctis_grid5_Position_11.rawtlt
+   - empiar-11830/tomo_004/08042022_BrnoKrios_Arctis_grid4_Position_3.rawtlt
+   - empiar-11830/tomo_005/10092023_NNPK_Arctis_WebUI_Ron_grid8_Position_2.rawtlt
   z_lims_list: []
 
 

@@ -154,7 +154,7 @@ def download_sample_data(
 
 @app.command("train-model")
 def train_model_command(
-    config: str = typer.Argument(..., help="Path to the training YAML file."),
+    config: str = typer.Option(..., "--config", help="Path to the training YAML file."),
     load_checkpoint: bool = typer.Option(
         False,
         "--load-checkpoint/--no-load-checkpoint",
@@ -182,7 +182,9 @@ def download_training_data(
     small_subset: bool = typer.Option(
         False,
         "--small-subset/--full-dataset",
-        help="Whether to download a small subset of the training data for quick testing (default: False). If enabled, only the first 10 tomograms will be downloaded.",
+        help="Whether to download a small subset of the training data for quick testing (default: False). " \
+        "If enabled, only the first 4 tomograms will be downloaded. This will take around 20GB of storage instead" \
+        "of 600+GB for the full dataset.",
     ),
 ) -> None:
     """Download training tilt-series data from Hugging Face dataset repo."""
@@ -197,7 +199,7 @@ def download_training_data(
     allow_patterns = SMALL_SUBSET_TOMOS if small_subset else None
 
     file_path = snapshot_download(
-        repo_id=HF_SAMPLE_DATA_REPO_ID,
+        repo_id=TRAINING_DATA_PATH,
         local_dir=str(target_dir),
         repo_type="dataset",
         local_dir_use_symlinks=False,
