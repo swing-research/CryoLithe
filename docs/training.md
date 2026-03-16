@@ -7,7 +7,7 @@ CryoLithe's training pipeline expects the following data for each tomogram:
  DeepDeWedge, cryoCARE,  or any other methods of your choice.
 - Tilt-series projection data. For this you can use dose-weighted, CTF-corrected or uncorrected projections. In the current training pipeline, cryolithe can also use ODD/EVN separated projections for better training. If you don't have ODD/EVN separated projections, you can just provide the projections and set the ODD/EVN paths to YAML `null` (or leave them as an empty list) in the config file.
 - Tilt angles corresponding to the tilt-series projections. These should be in .tlt format (a text file with one angle per line).
-- (Optional) z_lims_list for each tomogram, which specifies the z-slices to be used for training. If not provided we use a global limits in the trainig config file.
+- (Optional) z_lims_list for each tomogram, which specifies the z-slices to be used for training. If not provided we use a global limits in the training config file.
 
 Additionally, we provide additional options in the command line to download a small subset of the EMPIAR-11830 dataset for quick testing. You can use the following command to download the data:
 ```bash
