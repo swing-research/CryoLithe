@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional, Union
 
-HF_MODEL_REPO_ID = "Vinith2/CryoLithe"
-HF_SAMPLE_DATA_REPO_ID = "Vinith2/CryoLithe-sample-tiltseries"
+HF_MODEL_REPO_ID = "sada-group/CryoLithe"
+HF_SAMPLE_DATA_REPO_ID = "sada-group/CryoLithe-sample-tiltseries"
 PREFERRED_MODEL_DIRS = ("cryolithe", "cryolithe-pixel")
 
 TRAINING_DATA_PATH = "sada-group/CryoLithe-training-dataset"
