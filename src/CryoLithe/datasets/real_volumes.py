@@ -212,16 +212,23 @@ class RealVolumes(Dataset):
 
             if remove_wedge:
                 n_projections = len(data['projection'])
-                n_remove = np.random.randint(1,self.max_remove_projections_wedge)
-                # remove first or last n_remove projections randomly
-                rand = np.random.randint(0,2)
-                #print(n_remove)
-                if rand:
-                    data['projection'] = data['projection'][n_remove:]
-                    data['angles'] = data['angles'][n_remove:]
-                else:
-                    data['projection'] = data['projection'][:-n_remove]
-                    data['angles'] = data['angles'][:-n_remove]
+                # Ensure we have a valid range for randint and do not remove more than available
+                max_remove = min(self.max_remove_projections_wedge, n_projections)
+                if max_remove > 0:
+                    if max_remove == 1:
+                        n_remove = 1
+                    else:
+                        # Sample n_remove in [1, max_remove] inclusive
+                        n_remove = np.random.randint(1, max_remove + 1)
+                    # remove first or last n_remove projections randomly
+                    rand = np.random.randint(0,2)
+                    #print(n_remove)
+                    if rand:
+                        data['projection'] = data['projection'][n_remove:]
+                        data['angles'] = data['angles'][n_remove:]
+                    else:
+                        data['projection'] = data['projection'][:-n_remove]
+                        data['angles'] = data['angles'][:-n_remove]
         if self.remove_projections_random:
             drop_random = np.random.randint(0,2)
             if drop_random:
