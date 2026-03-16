@@ -176,11 +176,11 @@ class RealVolumes(Dataset):
             #print(f"Time taken to load from cache: {end-start}")
         else:
             start = time.time()
-            vol = mrcfile.open(self.root_dir + self.vol_paths[idx], mode='r').data
+            vol = mrcfile.open(os.path.join(self.root_dir, self.vol_paths[idx]), mode='r').data
             vol = vol.astype(np.float32)
-            projection  = mrcfile.open(self.root_dir + self.projection_paths[idx], mode='r').data
+            projection  = mrcfile.open(os.path.join(self.root_dir, self.projection_paths[idx]), mode='r').data
             projection = projection.astype(np.float32)
-            angles = np.loadtxt(self.root_dir + self.angle_paths[idx])*np.pi/180
+            angles = np.loadtxt(os.path.join(self.root_dir, self.angle_paths[idx]))*np.pi/180
             angles = angles.astype(np.float32)
             vol = np.moveaxis(vol, 0, 2)
             #Normalize the data
