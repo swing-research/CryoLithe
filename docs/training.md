@@ -5,7 +5,7 @@ This section provides instructions for training your own model using CryoLithe. 
 CryoLithe's training pipeline expects the following data for each tomogram:
 - Reference tomograms (e.g. denoised tomograms). These are used as the "ground truth" for training. You can generate these using your preferred denoising methods such as Icecream, Isonet,
  DeepDeWedge, cryoCARE,  or any other methods of your choice.
-- Tilt-series projection data. For this you can use dose-weighted, CTF-corrected or uncorrected projections. In the current training pipeline, cryolithe can also use ODD/EVN separated projections for better training. If you don't have ODD/EVN separated projections, you can just provide the projections and set the 'ODD/EVN' paths as nan. 
+- Tilt-series projection data. For this you can use dose-weighted, CTF-corrected or uncorrected projections. In the current training pipeline, cryolithe can also use ODD/EVN separated projections for better training. If you don't have ODD/EVN separated projections, you can just provide the projections and set the ODD/EVN paths to YAML `null` (or leave them as an empty list) in the config file.
 - Tilt angles corresponding to the tilt-series projections. These should be in .tlt format (a text file with one angle per line).
 - (Optional) z_lims_list for each tomogram, which specifies the z-slices to be used for training. If not provided we use a global limits in the trainig config file.
 
