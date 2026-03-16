@@ -1,0 +1,56 @@
+seed: 42
+output_dir: ./training-run/sample
+device: 0
+
+dataset:
+  root_dir: ./cryolithe-training-data/
+  normalize_type: standard
+  randomize_projections: true
+  full_randomize: true
+  remove_projections_wedge: false
+  max_remove_projections_wedge: 30
+  remove_projections_random: true
+  max_remove_projections_random: 8
+
+  vol_paths: 
+    - empiar-11830/tomo_001/vol_CTF_EVN_fbp_vol_CTF_ODD_fbp_icecream.mrc
+    - empiar-11830/tomo_002/vol_CTF_EVN_fbp_vol_CTF_ODD_fbp_icecream.mrc
+    - empiar-11830/tomo_004/vol_CTF_EVN_fbp_vol_CTF_ODD_fbp_icecream.mrc
+    - empiar-11830/tomo_005/vol_CTF_EVN_fbp_vol_CTF_ODD_fbp_icecream.mrc
+  projection_paths:
+    - empiar-11830/tomo_001/proj_CTF.mrc
+    - empiar-11830/tomo_002/proj_CTF.mrc
+    - empiar-11830/tomo_004/proj_CTF.mrc
+    - empiar-11830/tomo_005/proj_CTF.mrc
+  projection_paths_odd: 
+    - empiar-11830/tomo_001/proj_ODD_CTF.mrc
+    - empiar-11830/tomo_002/proj_ODD_CTF.mrc
+    - empiar-11830/tomo_004/proj_ODD_CTF.mrc
+    - empiar-11830/tomo_005/proj_ODD_CTF.mrc
+
+  projection_paths_even:
+   - empiar-11830/tomo_001/proj_EVN_CTF.mrc
+   - empiar-11830/tomo_002/proj_EVN_CTF.mrc
+   - empiar-11830/tomo_004/proj_EVN_CTF.mrc
+   - empiar-11830/tomo_005/proj_EVN_CTF.mrc
+  angle_paths:
+   - empiar-11830/tomo_001/06022023_BrnoKrios_Arctis_xe_Position_70.rawtlt
+   - empiar-11830/tomo_002/06042022_BrnoKrios_Arctis_grid5_Position_11.rawtlt
+   - empiar-11830/tomo_004/08042022_BrnoKrios_Arctis_grid4_Position_3.rawtlt
+   - empiar-11830/tomo_005/10092023_NNPK_Arctis_WebUI_Ron_grid8_Position_2.rawtlt
+  z_lims_list: []
+
+
+
+training:
+  num_epochs: 10000
+  num_points: 1000
+
+splits:
+  mode: ratio
+
+  train: 0.5
+  valid: 0.25
+  test: 0.25
+
+

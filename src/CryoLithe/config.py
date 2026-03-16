@@ -9,6 +9,13 @@ HF_MODEL_REPO_ID = "Vinith2/CryoLithe"
 HF_SAMPLE_DATA_REPO_ID = "Vinith2/CryoLithe-sample-tiltseries"
 PREFERRED_MODEL_DIRS = ("cryolithe", "cryolithe-pixel")
 
+TRAINING_DATA_PATH = "sada-group/CryoLithe-training-dataset"
+SMALL_SUBSET_TOMOS = [
+    "empiar-11830/tomo_001/*",
+    "empiar-11830/tomo_002/*",
+    "empiar-11830/tomo_004/*",
+    "empiar-11830/tomo_005/*",
+]
 
 def _resolve_path_value(value: Any, base_dir: Path) -> Any:
     if isinstance(value, str):
@@ -19,6 +26,40 @@ def _resolve_path_value(value: Any, base_dir: Path) -> Any:
     if isinstance(value, list):
         return [_resolve_path_value(v, base_dir) for v in value]
     return value
+
+
+def _resolve_nested_path_values(value: Any, base_dir: Path, key: Optional[str] = None) -> Any:
+    if isinstance(value, dict):
+        return {
+            nested_key: _resolve_nested_path_values(nested_value, base_dir, nested_key)
+            for nested_key, nested_value in value.items()
+        }
+    if isinstance(value, list):
+        return [_resolve_nested_path_values(item, base_dir, key) for item in value]
+    if not isinstance(value, str) or not value:
+        return value
+
+    path_like_keys = {"model_dir", "proj_file", "angle_file", "save_dir", "root_dir", "pretrain_path", "output_dir"}
+    if key in path_like_keys or (key is not None and (key.endswith("_dir") or key.endswith("_path"))):
+        return _resolve_path_value(value, base_dir)
+    return value
+
+
+def _load_yaml(config_path: Union[str, Path]) -> dict[str, Any]:
+    import yaml
+
+    with open(config_path, "r", encoding="utf-8") as file:
+        return yaml.safe_load(file) or {}
+
+
+def _deep_update(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(base)
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _deep_update(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
 
 
 def resolve_config_paths(config: dict[str, Any], config_path: Union[str, Path]) -> dict[str, Any]:
@@ -34,19 +75,129 @@ def resolve_config_paths(config: dict[str, Any], config_path: Union[str, Path]) 
 
 
 def load_config(config_path: Union[str, Path]) -> dict[str, Any]:
-    import yaml
-
-    with open(config_path, "r", encoding="utf-8") as file:
-        config = yaml.safe_load(file) or {}
+    config = _load_yaml(config_path)
     return resolve_config_paths(config, config_path)
 
 
 def load_default_config() -> dict[str, Any]:
-    import yaml
-
     defaults_path = Path(__file__).with_name("defaults.yaml")
-    with open(defaults_path, "r", encoding="utf-8") as file:
-        return yaml.safe_load(file) or {}
+    return _load_yaml(defaults_path)
+
+
+def load_training_default_config() -> dict[str, Any]:
+    defaults_path = Path(__file__).with_name("train_model.yaml")
+    defaults = _load_yaml(defaults_path)
+    return _resolve_nested_path_values(defaults, defaults_path.parent)
+
+
+def load_training_config(config_path: Union[str, Path]) -> dict[str, Any]:
+    resolved_path = Path(config_path).resolve()
+    config = _load_yaml(resolved_path)
+    return _resolve_nested_path_values(config, resolved_path.parent)
+
+
+def _validate_dataset_lists(dataset: dict[str, Any]) -> None:
+    required_list_keys = ("vol_paths", "projection_paths", "angle_paths")
+    lengths = {key: len(dataset.get(key, [])) for key in required_list_keys}
+    if len(set(lengths.values())) > 1:
+        raise ValueError(
+            "dataset vol_paths, projection_paths, and angle_paths must have the same length. "
+            f"Got lengths: {lengths}"
+        )
+
+    optional_list_keys = ("projection_paths_odd", "projection_paths_even", "z_lims_list")
+    expected = lengths["vol_paths"]
+    for key in optional_list_keys:
+        values = dataset.get(key)
+        if values in (None, []):
+            continue
+        if len(values) != expected:
+            raise ValueError(
+                f"dataset {key} must have length {expected} to match vol_paths, or be empty/null."
+            )
+
+
+def _subset_optional_list(dataset: dict[str, Any], key: str, indices: list[int]) -> Any:
+    values = dataset.get(key)
+    if values in (None, []):
+        return None
+    return [values[index] for index in indices]
+
+
+def _build_dataset_split(dataset: dict[str, Any], indices: list[int], cache: bool) -> dict[str, Any]:
+    split = {
+        key: value
+        for key, value in dataset.items()
+        if key
+        not in {
+            "vol_paths",
+            "projection_paths",
+            "projection_paths_odd",
+            "projection_paths_even",
+            "angle_paths",
+            "z_lims_list",
+        }
+    }
+    split["vol_paths"] = [dataset["vol_paths"][index] for index in indices]
+    split["projection_paths"] = [dataset["projection_paths"][index] for index in indices]
+    split["angle_paths"] = [dataset["angle_paths"][index] for index in indices]
+    split["projection_paths_odd"] = _subset_optional_list(dataset, "projection_paths_odd", indices)
+    split["projection_paths_even"] = _subset_optional_list(dataset, "projection_paths_even", indices)
+    split["z_lims_list"] = _subset_optional_list(dataset, "z_lims_list", indices)
+    split["cache"] = cache
+    return split
+
+
+def _build_split_indices(config: dict[str, Any]) -> tuple[list[int], list[int], list[int]]:
+    import random
+
+    dataset = config["dataset"]
+    splits = config["splits"]
+    total = len(dataset.get("vol_paths", []))
+    indices = list(range(total))
+
+    if splits.get("mode") == "explicit":
+        explicit = splits.get("explicit", {})
+        return (
+            list(explicit.get("train", [])),
+            list(explicit.get("valid", [])),
+            list(explicit.get("test", [])),
+        )
+
+    train_ratio = splits.get("train", 0.8)
+    valid_ratio = splits.get("valid", 0.1)
+    test_ratio = splits.get("test", 0.1)
+    ratio_sum = train_ratio + valid_ratio + test_ratio
+    if abs(ratio_sum - 1.0) > 1e-6:
+        raise ValueError(f"Split ratios must sum to 1.0, got {ratio_sum}")
+
+    if splits.get("shuffle", True):
+        rng = random.Random(splits.get("seed", 0))
+        rng.shuffle(indices)
+
+    train_end = int(total * train_ratio)
+    valid_end = train_end + int(total * valid_ratio)
+    return indices[:train_end], indices[train_end:valid_end], indices[valid_end:]
+
+
+def build_training_config(config_path: Union[str, Path]) -> dict[str, Any]:
+    config = _deep_update(load_training_default_config(), load_training_config(config_path))
+
+    dataset = config.get("dataset")
+    splits = config.get("splits")
+    if dataset is None:
+        raise ValueError("Training config requires a dataset section.")
+    if splits is None:
+        raise ValueError("Training config requires a splits section.")
+
+    _validate_dataset_lists(dataset)
+    train_indices, valid_indices, test_indices = _build_split_indices(config)
+    cache_config = splits.get("cache", {})
+
+    config["train_dataset"] = _build_dataset_split(dataset, train_indices, cache_config.get("train", True))
+    config["valid_dataset"] = _build_dataset_split(dataset, valid_indices, cache_config.get("valid", True))
+    config["test_dataset"] = _build_dataset_split(dataset, test_indices, cache_config.get("test", False))
+    return config
 
 
 def load_user_config() -> dict[str, Any]:
