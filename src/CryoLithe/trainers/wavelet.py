@@ -148,7 +148,7 @@ class TrainerRealWavelet(TrainerReal):
         # If volume size is smaller than zlim values, then adjust the zlim values
         # For now check only the last axiscompute_wavelet_coefficients
         if volume[0].shape[-1] < zlim_values[-1][1]:
-            # usse half the size of the volume
+            # use half the size of the volume
             zlims_list = list(zlim_values)
             zlims_list_z = list(zlims_list[-1])
             zlims_list_z[0] = volume[0].shape[-1]//4
