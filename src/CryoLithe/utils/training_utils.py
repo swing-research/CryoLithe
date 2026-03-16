@@ -33,7 +33,7 @@ def generate_patches(vol: Union[torch.Tensor, List[torch.Tensor]],
     else:
         n_projections = projections.shape[0]
         projection_size = projections.shape[1]
-        device = projections[1].device
+        device = projections.device
         dtype = projections.dtype
 
     if type(vol) == list:
