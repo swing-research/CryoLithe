@@ -36,4 +36,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-CryoLithe = ["defaults.yaml"]
+CryoLithe = ["defaults.yaml", "train_model.yaml"]
