@@ -27,6 +27,10 @@ Once you have your training data prepared and your configuration file ready, you
 ```bash
 cryolithe train-model --config path/to/your/training_config.yaml
 ```
+E.g. to train a model close to ones provided by us you can use the yaml file 'model_training.yaml' present in the docs directory and run:
+```bash
+cryolithe train-model --config model_training.yaml
+```
 
 This will start the training process. The model checkpoints and training logs will be saved in the output directory specified in your training config file.
 
@@ -39,4 +43,7 @@ To train the pixel-wise model set `use_wavelet_trainer`  parameter to false in t
 training:
     use_wavelet_trainer: false
 ```
+
+
+
 
