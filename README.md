@@ -5,7 +5,7 @@ CryoLithe is a supervised machine learning method to directly reconstruct the to
 
 
 ## Updates 
-- 19.02.2025:
+- 19.02.2026:
     - Updated interface to be more user friendly and easier to use.
     - uv installation method added which is a super fast.
     - trained models are now stored in Hugging Face and can be downloaded using the `cryolithe download` command.
