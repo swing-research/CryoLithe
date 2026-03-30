@@ -1,0 +1,143 @@
+seed: 42
+output_dir: null
+device: 0
+
+data:
+  type: t20
+  n_projections: 41
+
+dataset:
+  root_dir: null
+  normalize_type: standard
+  randomize_projections: true
+  full_randomize: true
+  remove_projections_wedge: false
+  max_remove_projections_wedge: 30
+  remove_projections_random: true
+  max_remove_projections_random: 8
+
+  vol_paths: []
+  projection_paths: []
+  projection_paths_odd: []
+  projection_paths_even: []
+  angle_paths: []
+  z_lims_list: []
+
+splits:
+  mode: ratio
+
+  train: 0.8
+  valid: 0.1
+  test: 0.1
+
+  shuffle: true
+  seed: 0
+
+  explicit:
+    train: []
+    valid: []
+    test: []
+
+  cache:
+    train: true
+    valid: true
+    test: false
+
+model:
+  type: SliceSet
+  mlp_output: 32
+  patch_size: 21
+  slice_index: 2
+  compare_index: 3
+  learn_residual: false
+  set_input: 64
+  set_output: 128
+  set_num_layers: 1
+  set_hidden_size: 128
+  set_skip_connection: true
+  set_bias: false
+  radon_bias: false
+  learned_positional_encoding: false
+  learned_positional_encoding_use_softmax: true
+  slice_transformer_avg_pooling: true
+  slice_transformer_positional_encoding_size: 64
+  sice_transformer_transformer_positional_encoding_add_angle: false
+  sice_transformer_positional_encoding_mult_angle: true
+  slice_mlp_hidden_size: 512
+  slice_mlp_num_layers: 5
+  slice_mlp_skip_connection: true
+  slice_mlp_bias: false
+  combine_mlp_layers: 5
+  combine_mlp_hidden: 512
+  combine_dropout: 0
+  combine_batch_norm: false
+  combine_learn_residual: false
+  combine_skip_connection: true
+  combine_mlp_bias: false
+  output_size: 8
+
+filter_projections: true
+
+ramp:
+  filter_type: cosine
+  use_learnable_ramp: false
+  use_pretrained: false
+  pretrain_path: null
+  type: VectorModel_real
+  model:
+    init: cosine
+    size: 600
+
+use_2D_filters: false
+
+filter_2D:
+  type: fir
+  model:
+    init: impulse
+    size: 101
+
+training:
+  use_volumetric_trainer: false
+  use_wavelet_trainer: true
+  preload: true
+  batch_size: 1
+  batch_size_volume: 1
+  num_epochs: 10000
+  num_points: 15000
+  lr: 0.0001
+  lr_scheduler_type: linear_warmup_cosine_annealing
+  lr_warmup_epochs: 500
+  lr_min: 0.0000001
+  weight_decay: 0.00001
+  ramp_weight_decay: 0
+  optimizer: adamw
+  loss: l1
+  save_every: 50
+  display_every: 200
+  learn_patch_scale: false
+  patch_scale_init: 1
+  normalize_patch: false
+  patch_ord: inf
+  use_angle: true
+  downsample: false
+  downsample_factor:
+    - 0.5
+    - 0.25
+  boundary: false
+  discrete_sampling: true
+  get_projection_prefiltered: false
+  scale_data: false
+  load_volume_epoch: 20
+  generate_projection_epoch: 10
+  repeat: 1
+  downsample_proj_vol: false
+  downsample_proj_vol_factor: 0.5
+  nlims:
+    - [100, 900] #  x-lims
+    - [80, 900] #  y-lims
+    - [200, 300] #  z-lims
+  dynamic_zlims: false
+  use_half_precision: false
+  use_amp: true
+  wavelet: bior3.1
+  wavelet_levels: 1

@@ -2,18 +2,24 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Optional
 
 import typer
+from ml_collections import config_dict as cd
 
 from .config import (
     HF_MODEL_REPO_ID,
     HF_SAMPLE_DATA_REPO_ID,
+    TRAINING_DATA_PATH,
+    SMALL_SUBSET_TOMOS,
+    build_training_config,
     build_reconstruction_config,
     pick_preferred_model_dir,
 )
 from .reconstruct import run_reconstruction
 from .utils.areTomoToImod import convert_to_imod
+from .train_model_real import train_model_real
 
 app = typer.Typer(
     help="CryoLithe command line interface",
@@ -157,6 +163,61 @@ def AreTomoToImod(
         output_path = "./"
     convert_to_imod(aln_path, output_path)
 
+
+@app.command("train-model")
+def train_model_command(
+    config: str = typer.Option(..., "--config", help="Path to the training YAML file."),
+    load_checkpoint: bool = typer.Option(
+        False,
+        "--load-checkpoint/--no-load-checkpoint",
+        help="Resume training from output_dir/checkpoint.pth.",
+    ),
+    device: Optional[int] = typer.Option(None, "--device", help="CUDA device id. Overrides config file.")
+) -> None:
+    """Train CryoLithe using a YAML config merged with train_model.yaml defaults."""
+    training_config = build_training_config(config)
+    if device is not None:
+        training_config["device"] = device
+    train_model_real(
+        configs=cd.ConfigDict(training_config),
+        load_checkpoint=load_checkpoint,
+        device=training_config.get("device", 0),
+    )
+
+@app.command("download-training-data")
+def download_training_data(
+    local_dir: Optional[str] = typer.Option(
+        None,
+        "--local-dir",
+        help="Directory to download training data. Defaults to ./cryolithe-training-data in the current working directory.",
+    ),
+    small_subset: bool = typer.Option(
+        False,
+        "--small-subset/--full-dataset",
+        help="Whether to download a small subset of the training data for quick testing (default: False). " \
+        "If enabled, only the first 4 tomograms will be downloaded. This will take around 20GB of storage instead" \
+        "of 600+GB for the full dataset.",
+    ),
+) -> None:
+    """Download training tilt-series data from Hugging Face dataset repo."""
+    from huggingface_hub import snapshot_download
+    from pathlib import Path
+
+    target_dir = Path(local_dir) if local_dir is not None else (Path.cwd() / "cryolithe-training-data")
+    if not target_dir.is_absolute():
+        target_dir = (Path.cwd() / target_dir).resolve()
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    allow_patterns = SMALL_SUBSET_TOMOS if small_subset else None
+
+    file_path = snapshot_download(
+        repo_id=TRAINING_DATA_PATH,
+        local_dir=str(target_dir),
+        repo_type="dataset",
+        local_dir_use_symlinks=False,
+        allow_patterns=allow_patterns,
+    )
+    typer.echo(f"Sample data saved in: {file_path}")
 
 
 def main() -> None:
