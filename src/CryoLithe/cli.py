@@ -39,7 +39,7 @@ def reconstruct(
     anti_alias: bool = typer.Option(True, "--anti-alias/--no-anti-alias", help="Use antialias while downsampling."),
     n3: Optional[int] = typer.Option(None, "--n3", help="Volume size along z-axis, after downsampling."),
     pixel: bool = typer.Option(False, "--pixel", help="Use cryolithe-pixel (longer, slighlty better quality) if True, and cryolithe (faster) is False."),
-    batch_size: int = typer.Option(100000, "--batch-size", help="Batch size for point inference."),
+    batch_size: int = typer.Option(100000, "--batch-size", help="Batch size for point inference. Reduce if memory issue."),
     num_workers: int = typer.Option(0, "--num-workers", help="DataLoader workers."),
 ) -> None:
     """Reconstruct volume using a YAML config or direct CLI options."""
