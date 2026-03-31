@@ -42,3 +42,8 @@ cryolithe reconstruct \
 
 If the model directory is not provided, the reconstruct code will choose the wavelet model by default. 
 If you want to use the pixel model, you can use the flag `--pixel` to specify that you want to use the pixel model.
+
+
+[Back to README](../README.md) <br>
+[Previous: Download examples](./3-download_examples.md) <br>
+[Next: Training your own model](./5-training.md)

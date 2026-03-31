@@ -1,7 +1,7 @@
-# Training your own model
+## Training your own model
 This section provides instructions for training your own model using CryoLithe. We provide a sample training configuration file which runs training on 4 tomograms from the EMPIAR-11830 dataset. You can modify this configuration file to train on your own data.
 
-## 1. Prepare your training data
+### 1. Prepare your training data
 CryoLithe's training pipeline expects the following data for each tomogram:
 - Reference tomograms (e.g. denoised tomograms). These are used as the "ground truth" for training. You can generate these using your preferred denoising methods such as Icecream, Isonet,
  DeepDeWedge, cryoCARE,  or any other methods of your choice.
@@ -15,12 +15,12 @@ cryolithe download-training-data --small-subset
 ```
 You can also download the full dataset using the same command without the `--small-subset` flag, but please note that the full dataset is quite large (600+ GB) and will require significant storage space and time to download.
 
-## 2. Create a training configuration file
+### 2. Create a training configuration file
 Next, you need to create a YAML configuration file that specifies the training parameters and paths to your training data. You can use the provided `sample_model_training.yaml` file as a template. Make sure to update the paths to your training data and adjust any training parameters as needed. 
 
 More detailed training config options are present in `train_model.yaml` present in src/CryoLithe/.
 
-## 3. Run the training command
+### 3. Run the training command
 Once you have your training data prepared and your configuration file ready, you can run the training command using CryoLithe's CLI. Use the following command, replacing the path to the config file with your own:
 ```bash
 cryolithe train-model --config path/to/your/sample_model_training.yaml
@@ -32,11 +32,11 @@ Optionally, if your weights and biases (wandb) logging is enabled in the trainin
 The config file 'sample_model_training.yaml' provides a simple example of training a pixel-wise model on 4 tomograms from the EMPIAR-11830 dataset. You can modify this config file to train on your own data and adjust the training parameters as needed.
 An example of a detailed training config file is provided in `src/CryoLithe/train_model.yaml`. All the possible parameters are described in the following paragraph.
 
-### Training the pixel-wise model
+#### Training the pixel-wise model
 To train the pixel-wise model set `use_wavelet_trainer` parameter to false in the config file. 
 
 
-## Pre-trained model
+### Pre-trained model
 To train a model close to ones provided, you can use the yaml file 'model_training.yaml' present in the docs directory and run:
 ```bash
 cryolithe train-model --config model_training.yaml
@@ -180,4 +180,6 @@ We first report the most critical ones that we recommend adjusting, if the defau
 | `training.wavelet_levels` | `1`                                   | Number of wavelet decomposition levels. |
 
 
+[Back to README](../README.md) <br>
+[Previous: Reconstructing the tomograms using the trained models](./4-example_reconstruction.md) <br>
 

@@ -20,3 +20,8 @@ cryolithe download --no-override-model-dir
 Currently, we provide two models:
  - 'cryolithe_pixel' - trained to recover the volume one pixel at a time (8x longer, top quality)
  - 'cryolithe' - trained to recover the wavelet coefficients of the volume (faster, small loss of quality).
+
+
+[Back to README](../README.md) <br>
+[Previous: Installation](./1-installation.md) <br>
+[Next: Download examples](./3-download_examples.md)

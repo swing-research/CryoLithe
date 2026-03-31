@@ -58,3 +58,5 @@ cryolithe --help
 ```
 It should display the main commands: `reconstruct`, `download`, and `download-sample-data`
 
+[Back to README](../README.md) <br>
+[Next: Download the trained models](./2-download_trained_models.md)
