@@ -323,20 +323,15 @@ def _run_training_loop(trainer, train_loader, valid_loader, configs, paths, star
         )
 
 
-def train_model_real(configs, load_checkpoint=False, device="cpu"):
+def train_model_real(configs, load_checkpoint=False):
     seed = configs.seed if hasattr(configs, "seed") else 42
-
-
     # Set random seeds for reproducibility
     torch.manual_seed(seed)
     np.random.seed(seed)
-
-
     path = configs.get("output_dir")
-
     assert path is not None, "output_dir must be specified in the training config"
 
-    device_id = device
+    device_id = configs.get("device", 0)
     paths = _prepare_output_paths(path)
     runtime_device = _resolve_torch_device(device_id)
     configs = _load_configs_if_needed(configs, load_checkpoint, paths["config_path"])

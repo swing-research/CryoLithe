@@ -181,7 +181,6 @@ def train_model_command(
     train_model_real(
         configs=cd.ConfigDict(training_config),
         load_checkpoint=load_checkpoint,
-        device=training_config.get("device", 0),
     )
 
 @app.command("download-training-data")

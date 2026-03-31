@@ -1,143 +1,142 @@
-seed: 42
-output_dir: null
-device: 0
+seed: 42 # Random seed for reproducibility
+output_dir: null # Directory to save outputs (models, logs, etc.)
+device: 0 # CUDA device id
+filter_projections: true # Whether to apply a filter to the projections before feeding them to the model. If true, the specified filter will be applied to the projections. If false, no filter will be applied to the projections.
+use_2D_filters: false # Whether to use 2D filters on the projections. If true, the specified 2D filter will be applied to the projections. If false, no 2D filter will be applied to the projections.
 
 data:
-  type: t20
-  n_projections: 41
+  type: t20 # Dataset type, e.g. t20, empiar10185, etc.
+  n_projections: null # Number of projections to use from the dataset. If null, use all available projections.
 
 dataset:
-  root_dir: null
-  normalize_type: standard
-  randomize_projections: true
-  full_randomize: true
-  remove_projections_wedge: false
-  max_remove_projections_wedge: 30
-  remove_projections_random: true
-  max_remove_projections_random: 8
+  root_dir: null # Root directory of the dataset. Should contain subdirectories for each sample, with projections and angles.
+  normalize_type: standard # Type of normalization to apply to the projections. Options: standard, minmax, none.
+  randomize_projections: true # Select randomly (if it exists) the tilt-series between odd, even of no splitting. If false, use the full tilt-series.
+  full_randomize: true # If True, select uniformly between odd, even, full tilt-series or mix the odd and even projections. If False, randomly select between odd, even and full set of projections.
+  remove_projections_wedge: false # If True, randomly remove projections next to the wedge. If false, do not remove projections within a wedge.
+  max_remove_projections_wedge: 30 # Maximum number of projections to remove next to the wedge if remove_projections_wedge is True.
+  remove_projections_random: true # If True, randomly remove projections from the tilt-series. If false, do not randomly remove projections.
+  max_remove_projections_random: 8 # Maximum number of projections to randomly remove if remove_projections_random is True.
 
-  vol_paths: []
-  projection_paths: []
-  projection_paths_odd: []
-  projection_paths_even: []
-  angle_paths: []
-  z_lims_list: []
+  vol_paths: [] # List of paths to the volumes
+  projection_paths: [] # List of paths to the projections
+  projection_paths_odd: [] # List of paths to the odd projections (Optional)
+  projection_paths_even: [] # List of paths to the even projections (Optional)
+  angle_paths: [] # List of paths to the angle files
+  z_lims_list: [] #
 
 splits:
-  mode: ratio
+  mode: ratio # Mode for splitting the data into train, valid and test sets. Options: ratio, explicit. If ratio, the data will be split according to the specified proportions. If explicit, the data will be split according to the specified lists of indices for each set.
 
-  train: 0.8
-  valid: 0.1
-  test: 0.1
+  train: 0.8 # Proportion of data to use for training. Should be between 0 and 1.
+  valid: 0.1 # Proportion of data to use for validation. Should be between 0 and 1.
+  test: 0.1 # Proportion of data to use for testing. Should be between 0 and 1. The sum of train, valid and test should be 1.
+  shuffle: true # Whether to shuffle the data before splitting into train, valid and test sets. If true, the data will be shuffled using the specified random seed. If false, the data will be split in the order it is provided.
+  seed: 0 # Random seed for shuffling the data before splitting into train, valid and test sets. Only used if shuffle is true.
 
-  shuffle: true
-  seed: 0
-
-  explicit:
+  explicit: # If mode is explicit, the data will be split according to the specified lists of indices for each set. The indices should correspond to the order of the data provided in the dataset section.
     train: []
     valid: []
     test: []
 
-  cache:
+  cache: # Whether to cache the data for each set. If true, the data will be cached in memory after the first epoch, which can speed up training but may use more memory.
     train: true
     valid: true
     test: false
 
 model:
-  type: SliceSet
-  mlp_output: 32
-  patch_size: 21
-  slice_index: 2
-  compare_index: 3
-  learn_residual: false
-  set_input: 64
-  set_output: 128
-  set_num_layers: 1
-  set_hidden_size: 128
-  set_skip_connection: true
-  set_bias: false
-  radon_bias: false
-  learned_positional_encoding: false
-  learned_positional_encoding_use_softmax: true
-  slice_transformer_avg_pooling: true
-  slice_transformer_positional_encoding_size: 64
-  sice_transformer_transformer_positional_encoding_add_angle: false
-  sice_transformer_positional_encoding_mult_angle: true
-  slice_mlp_hidden_size: 512
-  slice_mlp_num_layers: 5
-  slice_mlp_skip_connection: true
-  slice_mlp_bias: false
-  combine_mlp_layers: 5
-  combine_mlp_hidden: 512
-  combine_dropout: 0
-  combine_batch_norm: false
-  combine_learn_residual: false
-  combine_skip_connection: true
-  combine_mlp_bias: false
-  output_size: 8
+  type: SliceSet # Model type, only SliceSet have been implemented so far.
+  mlp_output: 32 # Output size of the MLP that processes each slice independently before combining them. This is a hyperparameter that can be tuned for better performance.
+  patch_size: 21 # Size of the patch to extract around each point. This should be an odd number to have a central pixel. The effective field of view of the patch will be patch_size * patch_scale.
+  slice_index: 2 # Index of the slice to use as input for the model. Should be between 0 and patch_size-1.
+  compare_index: 3 # Index of the slice to use for comparison in the loss function. Should be between 0 and patch_size-1, and different from slice_index.
+  learn_residual: false # Whether to learn the residual between the input slice and the target slice, instead of learning to predict the target slice directly. If true, the model will predict the difference between the input slice and the target slice, and the final output will be obtained by adding this predicted difference to the input slice. If false, the model will predict the target slice directly.
+  set_input: 64 # Input size of the MLP that processes each slice independently before combining them. This is a hyperparameter that can be tuned for better performance.
+  set_output: 128 # Output size of the MLP that processes each slice independently before combining them. This is a hyperparameter that can be tuned for better performance.
+  set_num_layers: 1 # Number of layers of the MLP that processes each slice independently before combining them. This is a hyperparameter that can be tuned for better performance.
+  set_hidden_size: 128 # Hidden size of the MLP that processes each slice independently before combining them. This is a hyperparameter that can be tuned for better performance.
+  set_skip_connection: true # Whether to use skip connections in the MLP that processes each slice independently before combining them. If true, the input to each layer will be concatenated with the output of the previous layer. If false, the input to each layer will only be the output of the previous layer.
+  set_bias: false # Whether to use bias in the MLP that processes each slice independently before combining them. If true, each layer will have a bias term. If false, no bias will be used in the layers.
+  radon_bias: false # Whether to use bias in the Radon transform layer. If true, the Radon transform layer will have a bias term. If false, no bias will be used in the Radon transform layer.
+  learned_positional_encoding: false # Whether to use learned positional encoding for the slices. If true, a learnable positional encoding will be added to the input of the MLP that processes each slice independently before combining them. If false, no positional encoding will be used.
+  learned_positional_encoding_use_softmax: true # Whether to use softmax for the learned positional encoding. If true, the positional encoding will be normalized using softmax. If false, the positional encoding will not be normalized.
+  slice_transformer_avg_pooling: true # Whether to use average pooling in the slice transformer. If true, average pooling will be applied to the output of the slice transformer before combining the slices. If false, no pooling will be applied and the output of the slice transformer will be used directly for combining the slices.
+  slice_transformer_positional_encoding_size: 64 # Size of the positional encoding for the slice transformer. This is a hyperparameter that can be tuned for better performance.
+  sice_transformer_transformer_positional_encoding_add_angle: false # Whether to add the angle information to the positional encoding for the slice transformer. If true, the angle information will be added to the positional encoding. If false, the angle information will not be added to the positional encoding.
+  sice_transformer_positional_encoding_mult_angle: true # Whether to multiply the angle information with the positional encoding for the slice transformer. If true, the angle information will be multiplied with the positional encoding. If false, the angle information will not be multiplied with the positional encoding.
+  slice_mlp_hidden_size: 512 # Hidden size of the MLP that processes each slice independently before combining them. This is a hyperparameter that can be tuned for better performance.
+  slice_mlp_num_layers: 5 # Number of layers of the MLP that processes each slice independently before combining them. This is a hyperparameter that can be tuned for better performance.
+  slice_mlp_skip_connection: true # Whether to use skip connections in the MLP that processes each slice independently before combining them. If true, the input to each layer will be concatenated with the output of the previous layer. If false, the input to each layer will only be the output of the previous layer.
+  slice_mlp_bias: false # Whether to use bias in the MLP that processes each slice independently before combining them. If true, each layer will have a bias term. If false, no bias will be used in the layers.
+  combine_mlp_layers: 5 # Number of layers of the MLP that combines the slices. This is a hyperparameter that can be tuned for better performance.
+  combine_mlp_hidden: 512 # Hidden size of the MLP that combines the slices. This is a hyperparameter that can be tuned for better performance.
+  combine_dropout: 0 # Dropout rate for the MLP that combines the slices. This is a hyperparameter that can be tuned for better performance. Should be between 0 and 1.
+  combine_batch_norm: false # Whether to use batch normalization in the MLP that combines the slices. If true, batch normalization will be applied after each layer in the MLP that combines the slices. If false, no batch normalization will be used in the MLP that combines the slices.
+  combine_learn_residual: false # Whether to learn the residual in the MLP that combines the slices. If true, the MLP that combines the slices will predict the difference between the input and the target, and the final output will be obtained by adding this predicted difference to the input. If false, the MLP that combines the slices will predict the target directly.
+  combine_skip_connection: true # Whether to use skip connections in the MLP that combines the slices. If true, the input to each layer will be concatenated with the output of the previous layer. If false, the input to each layer will only be the output of the previous layer.
+  combine_mlp_bias: false # Whether to use bias in the MLP that combines the slices. If true, each layer will have a bias term. If false, no bias will be used in the layers.
+  output_size: 8 # Output size of the model. This should be equal to the number of pixels in the patch that the model predicts, which is patch_size * patch_size if the model predicts a square patch. This is a hyperparameter that can be tuned for better performance.
 
-filter_projections: true
 
 ramp:
-  filter_type: cosine
-  use_learnable_ramp: false
-  use_pretrained: false
-  pretrain_path: null
-  type: VectorModel_real
+  filter_type: cosine # Type of ramp filter to apply to the projections. Options: cosine, linear, learnable. If filter_type is learnable, a learnable ramp filter will be used, and the use_learnable_ramp option will be ignored.
+  use_learnable_ramp: false # Whether to use a learnable ramp filter. If true, a learnable ramp filter will be used, and the filter_type option will be ignored. If false, the specified filter_type will be used for the ramp filter.
+  use_pretrained: false # Whether to use a pretrained ramp filter. If true, the ramp filter will be initialized with the specified pretrained weights. If false, the ramp filter will be initialized according to the specified filter_type or as a learnable filter if use_learnable_ramp is true.
+  pretrain_path: null # Path to the pretrained ramp filter weights. This should be a file containing the weights for the ramp filter, and is only used if use_pretrained is true.
+  type: VectorModel_real # Type of learnable ramp filter to use if use_learnable_ramp is true. Options: VectorModel_real, VectorModel_complex, FIR. If use_learnable_ramp is true and type is VectorModel_real or VectorModel_complex, the ramp filter will be implemented as a learnable vector in the Fourier domain. If use_learnable_ramp is true and type is FIR, the ramp filter will be implemented as a learnable FIR filter in the spatial domain.
   model:
-    init: cosine
-    size: 600
+    init: cosine # Initialization method for the learnable ramp filter if use_learnable_ramp is true. Options: cosine, linear, impulse, random. If use_learnable_ramp is true and type is VectorModel_real or VectorModel_complex, the learnable ramp filter will be initialized in the Fourier domain according to the specified initialization method. If use_learnable_ramp is true and type is FIR, the learnable ramp filter will be initialized in the spatial domain according to the specified initialization method.
+    size: 600 # Size of the learnable ramp filter if use_learnable_ramp is true. If type is VectorModel_real or VectorModel_complex, this should be equal to the number of pixels in the projection. If type is FIR, this is a hyperparameter that can be tuned for better performance and should be an odd number to have a central pixel.
 
-use_2D_filters: false
 
-filter_2D:
-  type: fir
-  model:
-    init: impulse
-    size: 101
+filter_2D: # Parameters for the 2D filter to apply to the projections if use_2D_filters is true.
+  type: fir # Type of 2D filter to apply to the projections. Options: fir, learnable. If type is fir, a fixed FIR filter will be applied to the projections. If type is learnable, a learnable 2D filter will be applied to the projections.
+  model: # Parameters for the learnable 2D filter if type is learnable.
+    init: impulse # Initialization method for the learnable 2D filter if type is learnable. Options: impulse, random. If type is learnable and init is impulse, the learnable 2D filter will be initialized as an impulse filter. If type is learnable and init is random, the learnable 2D filter will be initialized with random weights.
+    size: 101 # Size of the learnable 2D filter if type is learnable. This is a hyperparameter that can be tuned for better performance and should be an odd number to have a central pixel.
 
 training:
-  use_volumetric_trainer: false
-  use_wavelet_trainer: true
-  preload: true
-  batch_size: 1
-  batch_size_volume: 1
-  num_epochs: 10000
-  num_points: 15000
-  lr: 0.0001
-  lr_scheduler_type: linear_warmup_cosine_annealing
-  lr_warmup_epochs: 500
-  lr_min: 0.0000001
-  weight_decay: 0.00001
-  ramp_weight_decay: 0
-  optimizer: adamw
-  loss: l1
-  save_every: 50
-  display_every: 200
-  learn_patch_scale: false
-  patch_scale_init: 1
-  normalize_patch: false
-  patch_ord: inf
-  use_angle: true
-  downsample: false
-  downsample_factor:
+  use_volumetric_trainer: false # Whether to use a volumetric trainer that samples points from the volume and compares the predicted values with the ground truth values from the volume. If false, only the projections will be used for training, and the loss will be computed based on the difference between the predicted projections and the ground truth projections.
+  use_wavelet_trainer: true # Whether to use a wavelet-based trainer that applies a wavelet transform to the projections and compares the predicted wavelet coefficients with the ground truth wavelet coefficients. If false, the standard trainer will be used, which computes the loss based on the difference between the predicted projections and the ground truth projections.
+  preload: true # Whether to preload the data into memory before training. If true, the data will be loaded into memory at the beginning of training, which can speed up training but may use more memory. If false, the data will be loaded on-the-fly during training, which can save memory but may slow down training.
+  batch_size: 1 # Batch size for training. This is a hyperparameter that can be tuned for better performance. If use_volumetric_trainer is true, this should be the number of points to sample from the volume for each batch. If use_wavelet_trainer is true, this should be the number of projections to use for each batch.
+  batch_size_volume: 1 # Batch size for the volumetric trainer if use_volumetric_trainer is true. This should be the number of points to sample from the volume for each batch.
+  num_epochs: 10000 # Number of epochs to train the model. This is a hyperparameter that can be tuned for better performance.
+  num_points: 15000 # Number of points to sample from the volume for training if use_volumetric_trainer is true. This is a hyperparameter that can be tuned for better performance.
+  lr: 0.0001 # Learning rate for the optimizer. This is a hyperparameter that can be tuned for better performance.
+  lr_scheduler_type: linear_warmup_cosine_annealing # Type of learning rate scheduler to use. Options: linear_warmup_cosine_annealing, cosine_annealing, step, none. If linear_warmup_cosine_annealing, the learning rate will increase linearly from 0 to the specified learning rate during the warmup phase, and then will follow a cosine annealing schedule. If cosine_annealing, the learning rate will follow a cosine annealing schedule without a warmup phase. If step, the learning rate will decrease by a factor of gamma every step_size epochs. If none, no learning rate scheduler will be used and the learning rate will remain constant throughout training.
+  lr_warmup_epochs: 500 # Number of epochs for the warmup phase if lr_scheduler_type is linear_warmup_cosine_annealing. During the warmup phase, the learning rate will increase linearly from 0 to the specified learning rate. After the warmup phase, the learning rate will follow a cosine annealing schedule.
+  lr_min: 0.0000001 # Minimum learning rate for the cosine annealing schedule if lr_scheduler_type is linear_warmup_cosine_annealing or cosine_annealing. This is a hyperparameter that can be tuned for better performance.
+  weight_decay: 0.00001 # Weight decay for the optimizer. This is a hyperparameter that can be tuned for better performance. Should be between 0 and 1.
+  ramp_weight_decay: 0 # Weight decay for the learnable ramp filter if use_learnable_ramp is true. This is a hyperparameter that can be tuned for better performance. Should be between 0 and 1.
+  optimizer: adamw # Optimizer to use for training. Options: adam, adamw, sgd. If adam, the Adam optimizer will be used. If adamw, the AdamW optimizer will be used. If sgd, the SGD optimizer will be used.
+  loss: l1 # Loss function to use for training. Options: l1, l2, smooth_l1. If l1, the L1 loss will be used. If l2, the L2 loss will be used. If smooth_l1, the Smooth L1 loss will be used.
+  save_every: 50 # Save the model every specified number of epochs. This is a hyperparameter that can be tuned for better performance.
+  display_every: 200 # Display training progress every specified number of epochs. This is a hyperparameter that can be tuned for better performance.
+  learn_patch_scale: false # Whether to learn the patch scale during training. If true, the patch scale will be a learnable parameter that is updated during training. If false, the patch scale will be fixed to the specified patch_scale_init value.
+  patch_scale_init: 1 # Initial value for the patch scale if learn_patch_scale is true. This is a hyperparameter that can be tuned for better performance. The patch scale determines the effective field of view of the patch, with greater than one meaning that the effective field of view increases, and lower than one meaning that it decreases.
+  normalize_patch: false # Whether to normalize the patch before feeding it to the model. If true, the patch will be normalized using the specified normalization method. If false, no normalization will be applied to the patch.
+  patch_ord: inf # Order of the patch to feed to the model. If inf, the pixels in the patch will be fed to the model in order of their distance from the center pixel, with the closest pixels being fed first. If an integer value n, the pixels in the patch will be fed to the model in a raster scan order, starting from the top-left corner of the patch and moving row by row until all pixels are fed to the model.
+  use_angle: true # Whether to use the angle information as input to the model. If true, the angle information will be concatenated with the input patch and fed to the model. If false, the angle information will not be used as input to the model.
+  downsample: false # Whether to downsample the projections and the volume for training. If true, the projections and the volume will be downsampled by the specified factors. If false, no downsampling will be applied to the projections or the volume.
+  downsample_factor: # Factor by which to downsample the projections and the volume if downsample is true. This is a hyperparameter that can be tuned for better performance. The projections and the volume will be downsampled by this factor, meaning that their dimensions will be reduced by this factor. For example, if downsample_factor is 0.5, the projections and the volume will be downsampled to half of their original dimensions.
     - 0.5
     - 0.25
-  boundary: false
-  discrete_sampling: true
-  get_projection_prefiltered: false
-  scale_data: false
-  load_volume_epoch: 20
-  generate_projection_epoch: 10
-  repeat: 1
-  downsample_proj_vol: false
-  downsample_proj_vol_factor: 0.5
-  nlims:
+  boundary: false # Whether to use a boundary loss that compares the predicted and ground truth values at the boundary of the volume. If true, the boundary loss will be computed and added to the total loss during training. If false, no boundary loss will be used during training.
+  discrete_sampling: true # Whether to use discrete sampling of points from the volume for training if use_volumetric_trainer is true. If true, the points will be sampled at discrete locations in the volume. If false, the points will be sampled continuously from the volume.
+  get_projection_prefiltered: false # Whether to get the projections prefiltered with the specified ramp filter during training. If true, the projections will be prefiltered with the specified ramp filter before being used for training. If false, the raw projections will be used for training without any prefiltering.
+  scale_data: false # Whether to scale the input data (projections and volume) to a specific range during training. If true, the input data will be scaled to the specified range. If false, no scaling will be applied to the input data.
+  load_volume_epoch: 20 # Epoch at which to start using the volume for training if use_volumetric_trainer is true. Before this epoch, only the projections will be used for training, and the loss will be computed based on the difference between the predicted projections and the ground truth projections. After this epoch, points will be sampled from the volume and used for training, and the loss will be computed based on the difference between the predicted values at these points and the ground truth values from the volume.
+  generate_projection_epoch: 10 # Epoch at which to start generating projections from the predicted volume during training if use_volumetric_trainer is true. Before this epoch, the loss will be computed based on the difference between the predicted projections and the ground truth projections. After this epoch, projections will be generated from the predicted volume and used for training, and the loss will be computed based on the difference between these generated projections and the ground truth projections.
+  repeat: 1 # Number of times to repeat the training loop. This can be used to continue training for more epochs by repeating the training loop with the same or different parameters.
+  downsample_proj_vol: false # Whether to downsample the projections and the volume for training. If true, the projections and the volume will be downsampled by the specified factors. If false, no downsampling will be applied to the projections or the volume.
+  downsample_proj_vol_factor: 0.5 # Factor by which to downsample the projections and the volume for training if downsample_proj_vol is true. This is a hyperparameter that can be tuned for better performance. The projections and the volume will be downsampled by this factor, meaning that their dimensions will be reduced by this factor. For example, if downsample_proj_vol_factor is 0.5, the projections and the volume will be downsampled to half of their original dimensions.
+  nlims: # Limits for the random sampling of points from the volume during training if use_volumetric_trainer is true. This should be a list of three lists, each containing two values that specify the minimum and maximum limits along the x, y and z axes, respectively. The points will be sampled uniformly within these limits. For example, if nlims is [[100, 900], [80, 900], [200, 300]], the points will be sampled uniformly from the region defined by x between 100 and 900, y between 80 and 900, and z between 200 and 300.
     - [100, 900] #  x-lims
     - [80, 900] #  y-lims
     - [200, 300] #  z-lims
-  dynamic_zlims: false
-  use_half_precision: false
-  use_amp: true
-  wavelet: bior3.1
-  wavelet_levels: 1
+  dynamic_zlims: false # Whether to dynamically adjust the z-limits for sampling points from the volume during training based on the current epoch. If true, the z-limits will be adjusted at each epoch according to a specified schedule. If false, the z-limits will remain fixed throughout training as specified in nlims.
+  use_half_precision: false # Whether to use half-precision (float16) for training. If true, the model weights and activations will be stored in half-precision, which can reduce memory usage and speed up training on compatible hardware. If false, full-precision (float32) will be used for training.
+  use_amp: true # Whether to use automatic mixed precision (AMP) for training. If true, AMP will be used to automatically use half-precision where it is beneficial for performance while maintaining full-precision where necessary for numerical stability. If false, the precision will be determined by the use_half_precision option.
+  wavelet: bior3.1 # Type of wavelet to use for the wavelet-based trainer if use_wavelet_trainer is true. This should be a valid wavelet name that can be used with the PyWavelets library. The specified wavelet will be used to compute the wavelet coefficients of the projections, and the loss will be computed based on the difference between the predicted wavelet coefficients and the ground truth wavelet coefficients.
+  wavelet_levels: 1 # Number of levels of the wavelet decomposition to use for the wavelet-based trainer if use_wavelet_trainer is true. This is a hyperparameter that can be tuned for better performance. The specified number of levels will be used to compute the wavelet coefficients of the projections, and the loss will be computed based on the difference between the predicted wavelet coefficients and the ground truth wavelet coefficients at these levels.

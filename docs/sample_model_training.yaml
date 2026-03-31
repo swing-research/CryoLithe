@@ -1,9 +1,9 @@
-seed: 42
-output_dir: ./training-run/sample
-device: 0
+seed: 42 # Random seed for reproducibility
+output_dir: ./training-run/sample # Directory to save outputs (models, logs, etc.)
+device: 0 # CUDA device id
 
 dataset:
-  root_dir: ./cryolithe-training-data/
+  root_dir: ./cryolithe-training-data/ # Root directory of the dataset. Should contain subdirectories for each sample, with projections and angles.
   normalize_type: standard
   randomize_projections: true
   full_randomize: true
@@ -27,7 +27,6 @@ dataset:
     - empiar-11830/tomo_002/proj_ODD_CTF.mrc
     - empiar-11830/tomo_004/proj_ODD_CTF.mrc
     - empiar-11830/tomo_005/proj_ODD_CTF.mrc
-
   projection_paths_even:
    - empiar-11830/tomo_001/proj_EVN_CTF.mrc
    - empiar-11830/tomo_002/proj_EVN_CTF.mrc
@@ -40,17 +39,15 @@ dataset:
    - empiar-11830/tomo_005/10092023_NNPK_Arctis_WebUI_Ron_grid8_Position_2.rawtlt
   z_lims_list: []
 
-
-
 training:
-  num_epochs: 10000
+  num_epochs: 1000
   num_points: 1000
 
 splits:
-  mode: ratio
+  mode: ratio # Mode for splitting the data into train, valid and test sets. Options: ratio, explicit. If ratio, the data will be split according to the specified proportions. If explicit, the data will be split according to the specified lists of indices for each set.
 
-  train: 0.5
-  valid: 0.25
-  test: 0.25
-
-
+  train: 0.5 # Proportion of data to use for training. Should be between 0 and 1.
+  valid: 0.25 # Proportion of data to use for validation. Should be between 0 and 1.
+  test: 0.25 # Proportion of data to use for testing. Should be between 0 and 1. The sum of train, valid and test should be 1.
+  shuffle: true # Whether to shuffle the data before splitting into train, valid and test sets. If true, the data will be shuffled using the specified random seed. If false, the data will be split in the order it is provided.
+  seed: 0 # Random seed for shuffling the data before splitting into train, valid and test sets. Only used if shuffle is true.
