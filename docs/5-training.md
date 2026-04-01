@@ -36,12 +36,25 @@ An example of a detailed training config file is provided in `src/CryoLithe/trai
 To train the pixel-wise model set `use_wavelet_trainer` parameter to false in the config file. 
 
 
-### Pre-trained model
+#### Pre-trained model
 To train a model close to ones provided, you can use the yaml file 'model_training.yaml' present in the docs directory and run:
 ```bash
 cryolithe train-model --config model_training.yaml
 ```
 
+### 4- test the trained model
+After training, you can test the trained model on new projections using the `cryolithe reconstruct` command as described in the previous section. Make sure to specify the path to your trained model directory when running the reconstruct command.
+```bash
+cryolithe reconstruct \
+    --model-dir ./training-run/sample/ \
+    --proj-file ./cryolithe-training-data/empiar-11830/tomo_005/proj_CTF.mrc \
+    --angle-file ./cryolithe-training-data/empiar-11830/tomo_005/10092023_NNPK_Arctis_WebUI_Ron_grid8_Position_2.rawtlt \
+    --save-dir ./training-run/ \
+    --save-name cryolithe_training_example.mrc \
+    --device 0 \
+    --n3 512 \
+    --batch-size 100000  # Depends on the memory of your GPU
+```
 
 ## Training parameters
 There is a large number of parameters that can be adjusted for training. These are specified in the YAML config file used for training. Below is a detailed description of the parameters that can be set in the training config file.
