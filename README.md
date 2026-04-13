@@ -14,8 +14,7 @@ CryoLithe reconstructions facilitate downstream cryo-ET analysis, including segm
 
 
 ## Updates 
-- 01.04.2026:
-    - Update readme.
+- 13.04.2026:
     - Add training procedure.
 - 19.02.2026:
     - Command line interface + uv installation (super fast) + trained model in Hugging Face.

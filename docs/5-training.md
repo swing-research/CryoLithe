@@ -23,7 +23,7 @@ More detailed training config options are present in `train_model.yaml` present 
 ### 3. Run the training command
 Once you have your training data prepared and your configuration file ready, you can run the training command using CryoLithe's CLI. Use the following command, replacing the path to the config file with your own:
 ```bash
-cryolithe train-model --config path/to/your/sample_model_training.yaml
+cryolithe train-model --config docs/sample_model_training.yaml
 ```
 This will start the training process. The model checkpoints and training logs will be saved in the output directory specified in your training config file.
 

@@ -37,11 +37,10 @@ dataset:
    - empiar-11830/tomo_002/06042022_BrnoKrios_Arctis_grid5_Position_11.rawtlt
    - empiar-11830/tomo_004/08042022_BrnoKrios_Arctis_grid4_Position_3.rawtlt
    - empiar-11830/tomo_005/10092023_NNPK_Arctis_WebUI_Ron_grid8_Position_2.rawtlt
-  z_lims_list: []
 
 training:
   num_epochs: 1000
-  num_points: 1000
+  num_points: 10
 
 splits:
   mode: ratio # Mode for splitting the data into train, valid and test sets. Options: ratio, explicit. If ratio, the data will be split according to the specified proportions. If explicit, the data will be split according to the specified lists of indices for each set.

@@ -60,6 +60,10 @@ tests = [
             "--downsample-projections", "--downsample-factor", "0.5",
                 ],
     },
+    {
+        "name": "Test 7 - Save png to check manually",
+        "cmd": ["python", "./tests/test_load_volumes.py",]
+    }
 ]
 
 log_dir = Path("test_logs")
