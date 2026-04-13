@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -93,7 +94,8 @@ def load_training_default_config() -> dict[str, Any]:
 def load_training_config(config_path: Union[str, Path]) -> dict[str, Any]:
     resolved_path = Path(config_path).resolve()
     config = _load_yaml(resolved_path)
-    return _resolve_nested_path_values(config, resolved_path.parent)
+    return _resolve_nested_path_values(config, os.getcwd())
+    # return _resolve_nested_path_values(config, resolved_path.parent)
 
 
 def _validate_dataset_lists(dataset: dict[str, Any]) -> None:

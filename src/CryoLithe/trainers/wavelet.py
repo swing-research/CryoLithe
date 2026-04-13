@@ -36,7 +36,6 @@ class TrainerRealWavelet(TrainerReal):
             else:
                 zlim_values = None
 
-
             if self.config.use_2D_filters:
                 projection_filt = self.filter_2D(projection_filt)
             if self.config.filter_projections:

@@ -11,7 +11,7 @@ def generate_patches(vol: Union[torch.Tensor, List[torch.Tensor]],
                      discrete_sampling: bool = False,
                      patch_scale: torch.Tensor = 1,
                      volume_patch_size: int = None,
-                     nlims: int = None,
+                     nlims = None,
                     scaled_patches = False):
     """
     using the projections and volume generate the volumme sample and the patches from the projections

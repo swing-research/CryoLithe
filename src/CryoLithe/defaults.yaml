@@ -1,19 +1,20 @@
 # Base/default reconstruction config.
 # Required fields can stay null and be supplied via --config or CLI options.
 
-model_dir: null
-proj_file: null
-angle_file: null
-save_dir: null
-save_name: null
+model_dir: null # Path to trained model directory.
+proj_file: null # Path to projections .mrc/.mrcs file.
+angle_file: null # Path to tilt-angle file.
+save_dir: null # Directory to write reconstruction.
+save_name: null # Output volume filename.
 
-device: 0
-downsample_projections: false
-downsample_factor: 0.25
-anti_alias: true
-N3: null
-batch_size: 100000
-num_workers: 0
+device: 0 # CUDA device id
+downsample_projections: false # Whether to downsample the input projections for reconstruction. If true, the projections will be downsampled by the specified factor.
+downsample_factor: 0.25 # Factor by which to downsample the input projections if downsample_projections is true.
+anti_alias: true # Whether to apply an anti-aliasing filter to the projections before downsampling. This can help reduce artifacts in the reconstruction when downsampling.
+N3: null # Volume size along z-axis, after downsampling.
+batch_size: 100000 # Batch size for point inference. Reduce if memory issue.
+num_workers: 0 # Number of worker processes for data loading. Set to 0 to use the main process.
+model_variant: "cryolithe" # Use cryolithe-pixel (longer, slighlty better quality) or cryolithe (faster).
 
 #model parameters
-patch_scale: null
+patch_scale: 1 # Override model patch scale. The only parameter that will influence the reconstruction quality. Default is 1. Greater than one means that effective field of the patch increases, and lower than one means that it decreases.

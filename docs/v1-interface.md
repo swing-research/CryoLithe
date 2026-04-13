@@ -23,7 +23,7 @@ Run the script:
 python3 super.py --config <path_to_config_file>
 ```
 
-A sample YAML file is provided as `ribo80.yaml`.
+A sample YAML file is provided as `docs/ribo80.yaml`.
 
 ## Running the model on the ribosome dataset
 
@@ -40,18 +40,18 @@ This places data in the `data` directory. The dataset includes:
 To run:
 
 ```bash
-python3 super.py --config ribo80.yaml
+python3 super.py --config docs/ribo80.yaml
 ```
 
 ## Using the wavelet model
 
 ```bash
-python3 super.py --config ribo80_wavelet.yaml
+python3 super.py --config docs/ribo80_wavelet.yaml
 ```
 
 ## Running on a list of projections
 
-Use `super-list.py` with `ribo80_list.yaml`. You can set multiple values for:
+Use `super-list.py` with `docs/ribo80_list.yaml`. You can set multiple values for:
 - `proj_file` - list of projection paths
 - `angle_file` - list of angle paths
 - `save_name` - list of output names
@@ -60,7 +60,7 @@ Use `super-list.py` with `ribo80_list.yaml`. You can set multiple values for:
 Run:
 
 ```bash
-python3 super-list.py --config ribo80_list.yaml
+python3 super-list.py --config docs/ribo80_list.yaml
 ```
 
 ## Downloading older models

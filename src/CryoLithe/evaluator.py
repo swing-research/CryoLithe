@@ -63,8 +63,9 @@ class Evaluator:
             print('Using user provided patch scale:', patch_scale)
             patch_scale = torch.tensor([patch_scale]).to(device)
 
-
-        if configs.use_2D_fitlers or configs.use_2D_filters:
+        use_2D_fitlers = configs.get('use_2D_fitlers', False)
+        use_2D_filters = configs.get('use_2D_filters', False)
+        if use_2D_fitlers or use_2D_filters:
             filter_2D =checkpoint['filter_2D'].to(device)
         else: 
             filter_2D = None

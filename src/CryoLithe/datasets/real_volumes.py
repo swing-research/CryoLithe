@@ -155,7 +155,7 @@ class RealVolumes(Dataset):
                         else:
                             data['projection'] = data['projection_even']
                     else:
-                        porj_len = len(data['projection_full'])
+                        proj_len = len(data['projection_full'])
                         rand_full  = np.random.randint(0,4)
                         if rand_full == 0:
                             data['projection'] = data['projection_full']
@@ -164,7 +164,7 @@ class RealVolumes(Dataset):
                         elif rand_full == 2:
                             data['projection'] = data['projection_even']
                         else:
-                            rand = np.random.randint(0,2,porj_len)
+                            rand = np.random.randint(0,2,proj_len)
                             proj_mix = np.zeros_like(data['projection_full'])
                             proj_mix[rand==0] = data['projection_odd'][rand==0]
                             proj_mix[rand==1] = data['projection_even'][rand==1]
