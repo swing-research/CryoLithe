@@ -143,6 +143,7 @@ def run_reconstruction(config: dict[str, Any]) -> Union[str, List[str]]:
     config["model_dir"] = model_path
 
     device, multi_gpu, gpu_ids = _detect_devices(config["device"])
+    print("device:", device)
 
     batch_size = config["batch_size"]
     downsample = config["downsample_projections"]

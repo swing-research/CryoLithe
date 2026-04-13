@@ -30,19 +30,17 @@ This will start the training process. The model checkpoints and training logs wi
 Optionally, if your weights and biases (wandb) logging is enabled in the training config, you can monitor the training progress and metrics in real-time on your wandb dashboard.
 
 The config file 'sample_model_training.yaml' provides a simple example of training a pixel-wise model on 4 tomograms from the EMPIAR-11830 dataset. You can modify this config file to train on your own data and adjust the training parameters as needed.
-An example of a detailed training config file is provided in `src/CryoLithe/train_model.yaml`. All the possible parameters are described in the following paragraph.
+An example of a detailed training config file is provided in `src/CryoLithe/trai n_model.yaml`. All the possible parameters are described in the following paragraph.
+
+The released model has been training using parameters similar than those in the file 'model_training.yaml' present in the docs directory.
 
 #### Training the pixel-wise model
 To train the pixel-wise model set `use_wavelet_trainer` parameter to false in the config file. 
 
+#### More advanced parameters
+A more advanced list of possible parameters that can be adjusted for training is provided in the next section. These parameters are specified in the YAML config file used for training. We recommend adjusting the most critical parameters when training on a new dataset, and you can also explore the other parameters to further customize your training process.
 
-#### Pre-trained model
-To train a model close to ones provided, you can use the yaml file 'model_training.yaml' present in the docs directory and run:
-```bash
-cryolithe train-model --config model_training.yaml
-```
-
-### 4- test the trained model
+### 4- Test the trained model
 After training, you can test the trained model on new projections using the `cryolithe reconstruct` command as described in the previous section. Make sure to specify the path to your trained model directory when running the reconstruct command.
 ```bash
 cryolithe reconstruct \
@@ -52,7 +50,9 @@ cryolithe reconstruct \
     --save-dir ./training-run/ \
     --save-name cryolithe_training_example.mrc \
     --device 0 \
-    --n3 512 \
+    --n3 256 \
+    --downsample-projections \
+    --downsample-factor 0.5 \
     --batch-size 100000  # Depends on the memory of your GPU
 ```
 

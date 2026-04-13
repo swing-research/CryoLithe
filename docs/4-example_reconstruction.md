@@ -2,12 +2,12 @@
 Once the models are downloaded, you can use them to reconstruct the tomograms from your own tilt-series. 
 This is the `reconstruct` command.
 Specific arguments can be provided in a yaml file or directly in the command line.
-An example yaml file is provided in the repository as [`ribo80.yaml`](ribo80.yaml) which contains the necessary information to run the model on the example ribosome dataset.
+An example yaml file is provided in the repository docs as [`ribo80.yaml`](./ribo80.yaml) which contains the necessary information to run the model on the example ribosome dataset.
 
 **Note**: Make sure to update the paths in the yaml file to point to the correct locations of the projection and angle files and model directory on your system before running the command.
 
 ```bash
-cryolithe reconstruct --config ribo80.yaml
+cryolithe reconstruct --config docs/ribo80.yaml
 ```
 
 Alternatively, a convenient way would be to use the command line arguments to run the model. 

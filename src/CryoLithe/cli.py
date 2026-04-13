@@ -100,7 +100,6 @@ def download(
     path = snapshot_download(
         repo_id=HF_MODEL_REPO_ID,
         local_dir=local_dir,
-        local_dir_use_symlinks=False,
     )
     resolved_path = str(Path(path).resolve())
 
@@ -134,6 +133,11 @@ def download_sample_data(
         "--local-dir",
         help="Directory to download sample data. Defaults to ./cryolithe-sample-data in the current working directory.",
     ),
+    override_data: bool = typer.Option(
+        True,
+        "--override-data/--no-override-data",
+        help="If data already exists, replace it with the newly downloaded path (default: enabled).",
+    ),
 ) -> None:
     """Download sample tilt-series data from Hugging Face dataset repo."""
     from huggingface_hub import snapshot_download
@@ -144,13 +148,19 @@ def download_sample_data(
         target_dir = (Path.cwd() / target_dir).resolve()
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    file_path = snapshot_download(
-        repo_id=HF_SAMPLE_DATA_REPO_ID,
-        local_dir=str(target_dir),
-        repo_type="dataset",
-        local_dir_use_symlinks=False,
-    )
-    typer.echo(f"Sample data saved in: {file_path}")
+    existing_model_dir = Path(target_dir).is_dir()
+    if existing_model_dir and not override_data:
+        typer.echo(
+            f"Keeping existing data in {target_dir}. "
+            "Use --override-data to replace it."
+        )
+    else:
+        file_path = snapshot_download(
+            repo_id=HF_SAMPLE_DATA_REPO_ID,
+            local_dir=str(target_dir),
+            repo_type="dataset",
+        )
+        typer.echo(f"Sample data saved in: {file_path}")
 
 
 
@@ -197,6 +207,11 @@ def download_training_data(
         "If enabled, only the first 4 tomograms will be downloaded. This will take around 20GB of storage instead" \
         "of 600+GB for the full dataset.",
     ),
+    override_data: bool = typer.Option(
+        True,
+        "--override-data/--no-override-data",
+        help="If data already exists, replace it with the newly downloaded path (default: enabled).",
+    ),
 ) -> None:
     """Download training tilt-series data from Hugging Face dataset repo."""
     from huggingface_hub import snapshot_download
@@ -209,14 +224,20 @@ def download_training_data(
 
     allow_patterns = SMALL_SUBSET_TOMOS if small_subset else None
 
-    file_path = snapshot_download(
-        repo_id=TRAINING_DATA_PATH,
-        local_dir=str(target_dir),
-        repo_type="dataset",
-        local_dir_use_symlinks=False,
-        allow_patterns=allow_patterns,
-    )
-    typer.echo(f"Sample data saved in: {file_path}")
+    existing_model_dir = Path(target_dir).is_dir()
+    if existing_model_dir and not override_data:
+        typer.echo(
+            f"Keeping existing data in {target_dir}. "
+            "Use --override-data to replace it."
+        )
+    else:
+        file_path = snapshot_download(
+            repo_id=TRAINING_DATA_PATH,
+            local_dir=str(target_dir),
+            repo_type="dataset",
+            allow_patterns=allow_patterns,
+        )
+        typer.echo(f"Sample data saved in: {file_path}")
 
 
 def main() -> None:
