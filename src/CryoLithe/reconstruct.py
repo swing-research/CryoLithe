@@ -33,7 +33,9 @@ def _detect_devices(config_device: Any) -> Tuple[int, bool, Optional[List[int]]]
             pass
 
     if not gpus:
-        raise RuntimeError("No CUDA devices are available, but non-integer 'device' was provided.")
+        raise RuntimeError(
+            "No CUDA devices are available, but non-integer 'device' was provided."
+        )
 
     multi_gpu = len(gpus) > 1
     if multi_gpu:
@@ -100,6 +102,7 @@ def _run_single_reconstruction(
         n3 = int(max(n1, n2))
 
     Path(save_dir).mkdir(parents=True, exist_ok=True)
+    print(f"Input tilt-series of size {n1}x{n2} with {n3} slices to reconstruct")
 
     if multi_gpu:
         vol = evaluator.reconstruct(
