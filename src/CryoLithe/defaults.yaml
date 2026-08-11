@@ -7,7 +7,7 @@ angle_file: null # Path to tilt-angle file.
 save_dir: null # Directory to write reconstruction.
 save_name: null # Output volume filename.
 
-device: 0 # CUDA device id
+device: 0 # CUDA device id. Use "auto" for every visible gpu, or a list such as [0,1] to pick gpus. Multi-gpu is config-file only.
 downsample_projections: false # Whether to downsample the input projections for reconstruction. If true, the projections will be downsampled by the specified factor.
 downsample_factor: 0.25 # Factor by which to downsample the input projections if downsample_projections is true.
 anti_alias: true # Whether to apply an anti-aliasing filter to the projections before downsampling. This can help reduce artifacts in the reconstruction when downsampling.

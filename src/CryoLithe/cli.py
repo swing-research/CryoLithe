@@ -36,7 +36,11 @@ def reconstruct(
     angle_file: Optional[str] = typer.Option(None, "--angle-file", help="Path to tilt-angle file."),
     save_dir: Optional[str] = typer.Option(None, "--save-dir", help="Directory to write reconstruction."),
     save_name: Optional[str] = typer.Option(None, "--save-name", help="Output volume filename."),
-    device: int = typer.Option(0, "--device", help="CUDA device id."),
+    device: Optional[int] = typer.Option(
+        None,
+        "--device",
+        help="CUDA device id (single GPU). For multi-GPU set 'device' in the yaml config to 'auto' or a list of ids.",
+    ),
     downsample_projections: bool = typer.Option(
         False, "--downsample-projections/--no-downsample-projections", help="Whether to downsample the input projections for reconstruction. If true, the projections will be downsampled by the specified factor."
     ),

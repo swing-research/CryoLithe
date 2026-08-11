@@ -21,16 +21,33 @@ def _expand_to_len(name: str, value: Any, length: int) -> list[Any]:
 def _detect_devices(config_device: Any) -> Tuple[int, bool, Optional[List[int]]]:
     import torch
 
+    # A plain YAML scalar such as "1 4" or "1,4" parses as a string, not a list.
+    if isinstance(config_device, str):
+        parts = [part for part in config_device.replace(",", " ").split() if part]
+        if parts and all(part.isdigit() for part in parts):
+            config_device = int(parts[0]) if len(parts) == 1 else [int(part) for part in parts]
+
     if isinstance(config_device, int):
         return config_device, False, None
 
-    gpus: list[int] = []
-    for i in range(torch.cuda.device_count()):
-        try:
-            torch.cuda.get_device_properties(i)
-            gpus.append(i)
-        except AssertionError:
-            pass
+    gpus: list[int]
+    if isinstance(config_device, (list, tuple)):
+        gpus = [int(gpu) for gpu in config_device]
+        n_available = torch.cuda.device_count()
+        invalid = [gpu for gpu in gpus if not 0 <= gpu < n_available]
+        if invalid:
+            raise ValueError(
+                f"'device' requested GPU ids {invalid}, but torch only sees {n_available} device(s). "
+                "Ids are torch-local, so they are renumbered from 0 when CUDA_VISIBLE_DEVICES is set."
+            )
+    else:
+        gpus = []
+        for i in range(torch.cuda.device_count()):
+            try:
+                torch.cuda.get_device_properties(i)
+                gpus.append(i)
+            except AssertionError:
+                pass
 
     if not gpus:
         raise RuntimeError("No CUDA devices are available, but non-integer 'device' was provided.")
